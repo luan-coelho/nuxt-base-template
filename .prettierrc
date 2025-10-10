@@ -3,7 +3,7 @@
   "semi": false,
   "singleQuote": true,
   "tabWidth": 2,
-  "trailingComma": "all",
+  "trailingComma": "none",
   "htmlWhitespaceSensitivity": "ignore",
   "bracketSameLine": true,
   "printWidth": 120,
