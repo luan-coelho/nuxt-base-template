@@ -177,7 +177,7 @@ const statusFilter = ref('all')
 
 watch(
   () => statusFilter.value,
-  (newVal) => {
+  newVal => {
     if (!table?.value?.tableApi) return
 
     const statusColumn = table.value.tableApi.getColumn('status')

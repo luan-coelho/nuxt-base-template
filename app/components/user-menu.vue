@@ -29,11 +29,13 @@ const colors = [
 ]
 const neutrals = ['slate', 'gray', 'zinc', 'neutral', 'stone']
 
-const user = ref({
-  name: 'Benjamin Canac',
-  avatar: {
-    src: 'https://github.com/benjamincanac.png',
-    alt: 'Benjamin Canac'
+const user = computed(() => {
+  return {
+    name: 'Guest',
+    avatar: {
+      src: 'https://ui-avatars.com/api/?name=Guest&background=random',
+      alt: 'Guest'
+    }
   }
 })
 
@@ -79,7 +81,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
             slot: 'chip',
             checked: appConfig.ui.colors.primary === color,
             type: 'checkbox',
-            onSelect: (e) => {
+            onSelect: e => {
               e.preventDefault()
 
               appConfig.ui.colors.primary = color
@@ -100,7 +102,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
             slot: 'chip',
             type: 'checkbox',
             checked: appConfig.ui.colors.neutral === color,
-            onSelect: (e) => {
+            onSelect: e => {
               e.preventDefault()
 
               appConfig.ui.colors.neutral = color
@@ -199,7 +201,8 @@ const items = computed<DropdownMenuItem[][]>(() => [
     },
     {
       label: 'Log out',
-      icon: 'i-lucide-log-out'
+      icon: 'i-lucide-log-out',
+      onSelect: () => {}
     }
   ]
 ])

@@ -8,9 +8,14 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
-  routeRules: {
-    '/api/**': {
-      cors: true
+  runtimeConfig: {
+    // Variáveis privadas (apenas servidor)
+    // Podem ser sobrescritas por variáveis de ambiente
+    // apiSecret: '',
+
+    // Variáveis públicas (cliente e servidor)
+    public: {
+      apiBase: 'http://localhost:8080'
     }
   },
 

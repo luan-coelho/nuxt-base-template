@@ -6,19 +6,24 @@ defineProps<{
 }>()
 
 useSeoMeta({
-  title: 'Page not found',
-  description: 'We are sorry but this page could not be found.'
+  title: 'Página não encontrada',
+  description: 'Desculpe, mas esta página não pôde ser encontrada.'
 })
 
 useHead({
   htmlAttrs: {
-    lang: 'en'
+    lang: 'pt-BR'
   }
 })
 </script>
 
 <template>
   <UApp>
-    <UError :error="error" />
+    <UError
+      :error="{
+        statusCode: 404,
+        statusMessage: 'Página não encontrada',
+        message: 'A página que você está procurando não existe.'
+      }" />
   </UApp>
 </template>

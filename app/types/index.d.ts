@@ -1,5 +1,17 @@
 import type { AvatarProps } from '@nuxt/ui'
 
+declare module '#app' {
+  interface NuxtApp {
+    $api: typeof $fetch
+  }
+}
+
+declare module 'vue' {
+  interface ComponentCustomProperties {
+    $api: typeof $fetch
+  }
+}
+
 export type UserStatus = 'subscribed' | 'unsubscribed' | 'bounced'
 export type SaleStatus = 'paid' | 'failed' | 'refunded'
 

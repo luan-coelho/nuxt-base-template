@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { pt_br } from '@nuxt/ui/locale'
+
 const colorMode = useColorMode()
 
 const color = computed(() => (colorMode.value === 'dark' ? '#1b1718' : 'white'))
@@ -11,13 +13,12 @@ useHead({
   ],
   link: [{ rel: 'icon', href: '/favicon.ico' }],
   htmlAttrs: {
-    lang: 'en'
+    lang: 'pt-BR'
   }
 })
 
 const title = 'Nuxt Dashboard Template'
-const description
-  = 'A professional dashboard template built with Nuxt UI, featuring multiple pages, data visualization, and comprehensive management capabilities for creating powerful admin interfaces.'
+const description = 'Uma aplicação para segurança do trabalho'
 
 useSeoMeta({
   title,
@@ -31,7 +32,7 @@ useSeoMeta({
 </script>
 
 <template>
-  <UApp>
+  <UApp :locale="pt_br">
     <NuxtLoadingIndicator />
 
     <NuxtLayout>

@@ -7,7 +7,8 @@ export default withNuxt(
     rules: {
       'vue/max-attributes-per-line': 'off',
       'vue/no-multiple-template-root': 'off',
-      'vue/html-closing-bracket-newline': 'off'
+      'vue/html-closing-bracket-newline': 'off',
+      '@stylistic/arrow-parens': 'off'
     }
   }
 )
