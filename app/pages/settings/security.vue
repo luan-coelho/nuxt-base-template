@@ -25,28 +25,13 @@ const validate = (state: Partial<PasswordSchema>): FormError[] => {
 
 <template>
   <UPageCard title="Password" description="Confirm your current password before setting a new one." variant="subtle">
-    <UForm
-      :schema="passwordSchema"
-      :state="password"
-      :validate="validate"
-      class="flex max-w-xs flex-col gap-4"
-    >
+    <UForm :schema="passwordSchema" :state="password" :validate="validate" class="flex max-w-xs flex-col gap-4">
       <UFormField name="current">
-        <UInput
-          v-model="password.current"
-          type="password"
-          placeholder="Current password"
-          class="w-full"
-        />
+        <UInput v-model="password.current" type="password" placeholder="Current password" class="w-full" />
       </UFormField>
 
       <UFormField name="new">
-        <UInput
-          v-model="password.new"
-          type="password"
-          placeholder="New password"
-          class="w-full"
-        />
+        <UInput v-model="password.new" type="password" placeholder="New password" class="w-full" />
       </UFormField>
 
       <UButton label="Update" class="w-fit" type="submit" />

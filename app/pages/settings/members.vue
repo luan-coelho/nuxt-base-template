@@ -31,13 +31,7 @@ const filteredMembers = computed(() => {
       :ui="{ container: 'p-0 sm:p-0 gap-y-0', wrapper: 'items-stretch', header: 'p-4 mb-0 border-b border-default' }"
     >
       <template #header>
-        <UInput
-          v-model="q"
-          icon="i-lucide-search"
-          placeholder="Search members"
-          autofocus
-          class="w-full"
-        />
+        <UInput v-model="q" icon="i-lucide-search" placeholder="Search members" autofocus class="w-full" />
       </template>
 
       <SettingsMembersList :members="filteredMembers" />

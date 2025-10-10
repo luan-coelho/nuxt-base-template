@@ -51,13 +51,7 @@ const isMobile = breakpoints.smaller('lg')
 </script>
 
 <template>
-  <UDashboardPanel
-    id="inbox-1"
-    :default-size="25"
-    :min-size="20"
-    :max-size="30"
-    resizable
-  >
+  <UDashboardPanel id="inbox-1" :default-size="25" :min-size="20" :max-size="30" resizable>
     <UDashboardNavbar title="Inbox">
       <template #leading>
         <UDashboardSidebarCollapse />
@@ -67,12 +61,7 @@ const isMobile = breakpoints.smaller('lg')
       </template>
 
       <template #right>
-        <UTabs
-          v-model="selectedTab"
-          :items="tabItems"
-          :content="false"
-          size="xs"
-        />
+        <UTabs v-model="selectedTab" :items="tabItems" :content="false" size="xs" />
       </template>
     </UDashboardNavbar>
     <InboxList v-model="selectedMail" :mails="filteredMails" />

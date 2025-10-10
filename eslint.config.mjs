@@ -5,8 +5,8 @@ export default withNuxt(
   // Custom rules configuration
   {
     rules: {
-      'vue/no-multiple-template-root': 'off',
-      'vue/max-attributes-per-line': ['error', { singleline: 3 }]
+      'vue/max-attributes-per-line': 'off',
+      'vue/no-multiple-template-root': 'off'
     }
   }
 )

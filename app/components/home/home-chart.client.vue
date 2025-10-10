@@ -78,19 +78,9 @@ const template = (d: DataRecord) => `${formatDate(d.date)}: ${formatNumber(d.amo
       </div>
     </template>
 
-    <VisXYContainer
-      :data="data"
-      :padding="{ top: 40 }"
-      class="h-96"
-      :width="width"
-    >
+    <VisXYContainer :data="data" :padding="{ top: 40 }" class="h-96" :width="width">
       <VisLine :x="x" :y="y" color="var(--ui-primary)" />
-      <VisArea
-        :x="x"
-        :y="y"
-        color="var(--ui-primary)"
-        :opacity="0.1"
-      />
+      <VisArea :x="x" :y="y" color="var(--ui-primary)" :opacity="0.1" />
 
       <VisAxis type="x" :x="x" :tick-format="xTicks" />
 

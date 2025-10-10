@@ -75,12 +75,7 @@ const selectRange = (range: { days?: number, months?: number, years?: number }) 
 
 <template>
   <UPopover :content="{ align: 'start' }" :modal="true">
-    <UButton
-      color="neutral"
-      variant="ghost"
-      icon="i-lucide-calendar"
-      class="data-[state=open]:bg-elevated group"
-    >
+    <UButton color="neutral" variant="ghost" icon="i-lucide-calendar" class="data-[state=open]:bg-elevated group">
       <span class="truncate">
         <template v-if="selected.start">
           <template v-if="selected.end">{{ df.format(selected.start) }} - {{ df.format(selected.end) }}</template>
@@ -115,12 +110,7 @@ const selectRange = (range: { days?: number, months?: number, years?: number }) 
           />
         </div>
 
-        <UCalendar
-          v-model="calendarRange"
-          class="p-2"
-          :number-of-months="2"
-          range
-        />
+        <UCalendar v-model="calendarRange" class="p-2" :number-of-months="2" range />
       </div>
     </template>
   </UPopover>

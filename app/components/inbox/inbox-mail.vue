@@ -58,13 +58,7 @@ function onSubmit() {
   <UDashboardPanel id="inbox-2">
     <UDashboardNavbar :title="mail.subject" :toggle="false">
       <template #leading>
-        <UButton
-          icon="i-lucide-x"
-          color="neutral"
-          variant="ghost"
-          class="-ms-1.5"
-          @click="emits('close')"
-        />
+        <UButton icon="i-lucide-x" color="neutral" variant="ghost" class="-ms-1.5" @click="emits('close')" />
       </template>
 
       <template #right>
@@ -136,13 +130,7 @@ function onSubmit() {
 
             <div class="flex items-center justify-end gap-2">
               <UButton color="neutral" variant="ghost" label="Save draft" />
-              <UButton
-                type="submit"
-                color="neutral"
-                :loading="loading"
-                label="Send"
-                icon="i-lucide-send"
-              />
+              <UButton type="submit" color="neutral" :loading="loading" label="Send" icon="i-lucide-send" />
             </div>
           </div>
         </form>

@@ -48,12 +48,7 @@ function onFileClick() {
 </script>
 
 <template>
-  <UForm
-    id="settings"
-    :schema="profileSchema"
-    :state="profile"
-    @submit="onSubmit"
-  >
+  <UForm id="settings" :schema="profileSchema" :state="profile" @submit="onSubmit">
     <UPageCard
       title="Profile"
       description="These informations will be displayed publicly."
@@ -61,13 +56,7 @@ function onFileClick() {
       orientation="horizontal"
       class="mb-4"
     >
-      <UButton
-        form="settings"
-        label="Save changes"
-        color="neutral"
-        type="submit"
-        class="w-fit lg:ms-auto"
-      />
+      <UButton form="settings" label="Save changes" color="neutral" type="submit" class="w-fit lg:ms-auto" />
     </UPageCard>
 
     <UPageCard variant="subtle">
@@ -110,13 +99,7 @@ function onFileClick() {
         <div class="flex flex-wrap items-center gap-3">
           <UAvatar :src="profile.avatar" :alt="profile.name" size="lg" />
           <UButton label="Choose" color="neutral" @click="onFileClick" />
-          <input
-            ref="fileRef"
-            type="file"
-            class="hidden"
-            accept=".jpg, .jpeg, .png, .gif"
-            @change="onFileChange"
-          >
+          <input ref="fileRef" type="file" class="hidden" accept=".jpg, .jpeg, .png, .gif" @change="onFileChange">
         </div>
       </UFormField>
       <USeparator />
@@ -127,12 +110,7 @@ function onFileClick() {
         class="flex items-start justify-between gap-4 max-sm:flex-col"
         :ui="{ container: 'w-full' }"
       >
-        <UTextarea
-          v-model="profile.bio"
-          :rows="5"
-          autoresize
-          class="w-full"
-        />
+        <UTextarea v-model="profile.bio" :rows="5" autoresize class="w-full" />
       </UFormField>
     </UPageCard>
   </UForm>
