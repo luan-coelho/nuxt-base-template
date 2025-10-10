@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DateFormatter, getLocalTimeZone, CalendarDate, today } from '@internationalized/date'
+import { CalendarDate, DateFormatter, getLocalTimeZone, today } from '@internationalized/date'
 import type { Range } from '~/types'
 
 const df = new DateFormatter('en-US', {
@@ -18,11 +18,7 @@ const ranges = [
 ]
 
 const toCalendarDate = (date: Date) => {
-  return new CalendarDate(
-    date.getFullYear(),
-    date.getMonth() + 1,
-    date.getDate()
-  )
+  return new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate())
 }
 
 const calendarRange = computed({
@@ -87,26 +83,25 @@ const selectRange = (range: { days?: number, months?: number, years?: number }) 
     >
       <span class="truncate">
         <template v-if="selected.start">
-          <template v-if="selected.end">
-            {{ df.format(selected.start) }} - {{ df.format(selected.end) }}
-          </template>
+          <template v-if="selected.end">{{ df.format(selected.start) }} - {{ df.format(selected.end) }}</template>
           <template v-else>
             {{ df.format(selected.start) }}
           </template>
         </template>
-        <template v-else>
-          Pick a date
-        </template>
+        <template v-else>Pick a date</template>
       </span>
 
       <template #trailing>
-        <UIcon name="i-lucide-chevron-down" class="shrink-0 text-dimmed size-5 group-data-[state=open]:rotate-180 transition-transform duration-200" />
+        <UIcon
+          name="i-lucide-chevron-down"
+          class="text-dimmed size-5 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"
+        />
       </template>
     </UButton>
 
     <template #content>
-      <div class="flex items-stretch sm:divide-x divide-default">
-        <div class="hidden sm:flex flex-col justify-center">
+      <div class="divide-default flex items-stretch sm:divide-x">
+        <div class="hidden flex-col justify-center sm:flex">
           <UButton
             v-for="(range, index) in ranges"
             :key="index"

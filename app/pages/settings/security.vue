@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import * as z from 'zod'
 import type { FormError } from '@nuxt/ui'
+import * as z from 'zod'
 
 const passwordSchema = z.object({
   current: z.string().min(8, 'Must be at least 8 characters'),
@@ -24,16 +24,12 @@ const validate = (state: Partial<PasswordSchema>): FormError[] => {
 </script>
 
 <template>
-  <UPageCard
-    title="Password"
-    description="Confirm your current password before setting a new one."
-    variant="subtle"
-  >
+  <UPageCard title="Password" description="Confirm your current password before setting a new one." variant="subtle">
     <UForm
       :schema="passwordSchema"
       :state="password"
       :validate="validate"
-      class="flex flex-col gap-4 max-w-xs"
+      class="flex max-w-xs flex-col gap-4"
     >
       <UFormField name="current">
         <UInput
@@ -60,7 +56,7 @@ const validate = (state: Partial<PasswordSchema>): FormError[] => {
   <UPageCard
     title="Account"
     description="No longer want to use our service? You can delete your account here. This action is not reversible. All information related to this account will be deleted permanently."
-    class="bg-gradient-to-tl from-error/10 from-5% to-default"
+    class="from-error/10 to-default bg-gradient-to-tl from-5%"
   >
     <template #footer>
       <UButton label="Delete account" color="error" />

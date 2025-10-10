@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
 import { breakpointsTailwind } from '@vueuse/core'
 import type { Mail } from '~/types'
+import { computed, ref, watch } from 'vue'
 
-const tabItems = [{
-  label: 'All',
-  value: 'all'
-}, {
-  label: 'Unread',
-  value: 'unread'
-}]
+const tabItems = [
+  {
+    label: 'All',
+    value: 'all'
+  },
+  {
+    label: 'Unread',
+    value: 'unread'
+  }
+]
 const selectedTab = ref('all')
 
 const { data: mails } = await useFetch<Mail[]>('/api/mails', { default: () => [] })
@@ -76,8 +79,8 @@ const isMobile = breakpoints.smaller('lg')
   </UDashboardPanel>
 
   <InboxMail v-if="selectedMail" :mail="selectedMail" @close="selectedMail = null" />
-  <div v-else class="hidden lg:flex flex-1 items-center justify-center">
-    <UIcon name="i-lucide-inbox" class="size-32 text-dimmed" />
+  <div v-else class="hidden flex-1 items-center justify-center lg:flex">
+    <UIcon name="i-lucide-inbox" class="text-dimmed size-32" />
   </div>
 
   <ClientOnly>

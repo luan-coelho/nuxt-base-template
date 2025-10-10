@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { format } from 'date-fns'
 import type { Mail } from '~/types'
+import { format } from 'date-fns'
 
 defineProps<{
   mail: Mail
@@ -8,19 +8,28 @@ defineProps<{
 
 const emits = defineEmits(['close'])
 
-const dropdownItems = [[{
-  label: 'Mark as unread',
-  icon: 'i-lucide-check-circle'
-}, {
-  label: 'Mark as important',
-  icon: 'i-lucide-triangle-alert'
-}], [{
-  label: 'Star thread',
-  icon: 'i-lucide-star'
-}, {
-  label: 'Mute thread',
-  icon: 'i-lucide-circle-pause'
-}]]
+const dropdownItems = [
+  [
+    {
+      label: 'Mark as unread',
+      icon: 'i-lucide-check-circle'
+    },
+    {
+      label: 'Mark as important',
+      icon: 'i-lucide-triangle-alert'
+    }
+  ],
+  [
+    {
+      label: 'Star thread',
+      icon: 'i-lucide-star'
+    },
+    {
+      label: 'Mute thread',
+      icon: 'i-lucide-circle-pause'
+    }
+  ]
+]
 
 const toast = useToast()
 
@@ -60,11 +69,7 @@ function onSubmit() {
 
       <template #right>
         <UTooltip text="Archive">
-          <UButton
-            icon="i-lucide-inbox"
-            color="neutral"
-            variant="ghost"
-          />
+          <UButton icon="i-lucide-inbox" color="neutral" variant="ghost" />
         </UTooltip>
 
         <UTooltip text="Reply">
@@ -72,25 +77,17 @@ function onSubmit() {
         </UTooltip>
 
         <UDropdownMenu :items="dropdownItems">
-          <UButton
-            icon="i-lucide-ellipsis-vertical"
-            color="neutral"
-            variant="ghost"
-          />
+          <UButton icon="i-lucide-ellipsis-vertical" color="neutral" variant="ghost" />
         </UDropdownMenu>
       </template>
     </UDashboardNavbar>
 
-    <div class="flex flex-col sm:flex-row justify-between gap-1 p-4 sm:px-6 border-b border-default">
+    <div class="border-default flex flex-col justify-between gap-1 border-b p-4 sm:flex-row sm:px-6">
       <div class="flex items-start gap-4 sm:my-1.5">
-        <UAvatar
-          v-bind="mail.from.avatar"
-          :alt="mail.from.name"
-          size="3xl"
-        />
+        <UAvatar v-bind="mail.from.avatar" :alt="mail.from.name" size="3xl" />
 
         <div class="min-w-0">
-          <p class="font-semibold text-highlighted">
+          <p class="text-highlighted font-semibold">
             {{ mail.from.name }}
           </p>
           <p class="text-muted">
@@ -99,25 +96,23 @@ function onSubmit() {
         </div>
       </div>
 
-      <p class="max-sm:pl-16 text-muted text-sm sm:mt-2">
+      <p class="text-muted text-sm max-sm:pl-16 sm:mt-2">
         {{ format(new Date(mail.date), 'dd MMM HH:mm') }}
       </p>
     </div>
 
-    <div class="flex-1 p-4 sm:p-6 overflow-y-auto">
+    <div class="flex-1 overflow-y-auto p-4 sm:p-6">
       <p class="whitespace-pre-wrap">
         {{ mail.body }}
       </p>
     </div>
 
-    <div class="pb-4 px-4 sm:px-6 shrink-0">
+    <div class="shrink-0 px-4 pb-4 sm:px-6">
       <UCard variant="subtle" class="mt-auto" :ui="{ header: 'flex items-center gap-1.5 text-dimmed' }">
         <template #header>
           <UIcon name="i-lucide-reply" class="size-5" />
 
-          <span class="text-sm truncate">
-            Reply to {{ mail.from.name }} ({{ mail.from.email }})
-          </span>
+          <span class="truncate text-sm">Reply to {{ mail.from.name }} ({{ mail.from.email }})</span>
         </template>
 
         <form @submit.prevent="onSubmit">
@@ -136,19 +131,11 @@ function onSubmit() {
 
           <div class="flex items-center justify-between">
             <UTooltip text="Attach file">
-              <UButton
-                color="neutral"
-                variant="ghost"
-                icon="i-lucide-paperclip"
-              />
+              <UButton color="neutral" variant="ghost" icon="i-lucide-paperclip" />
             </UTooltip>
 
             <div class="flex items-center justify-end gap-2">
-              <UButton
-                color="neutral"
-                variant="ghost"
-                label="Save draft"
-              />
+              <UButton color="neutral" variant="ghost" label="Save draft" />
               <UButton
                 type="submit"
                 color="neutral"
