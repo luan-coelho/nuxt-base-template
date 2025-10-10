@@ -1,6 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: ['@nuxt/eslint', '@nuxt/ui', '@vueuse/nuxt'],
+  modules: ['nuxt-auth-utils', '@nuxt/eslint', '@nuxt/ui', '@vueuse/nuxt'],
 
   devtools: {
     enabled: true
@@ -9,10 +9,6 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
 
   runtimeConfig: {
-    // Variáveis privadas (apenas servidor)
-    // Podem ser sobrescritas por variáveis de ambiente
-    // apiSecret: '',
-
     // Variáveis públicas (cliente e servidor)
     public: {
       apiBase: 'http://localhost:8080'

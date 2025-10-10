@@ -1,4 +1,5 @@
 import type { User } from '~/types'
+import { callBackend } from '../utils/backend'
 
 const customers: User[] = [
   {
@@ -203,6 +204,18 @@ const customers: User[] = [
   }
 ]
 
-export default eventHandler(async () => {
+export default eventHandler(async event => {
+  await requireUserSession(event)
+
+  try {
+    const { data } = await callBackend<User[] | { data?: User[] }>(event, '/api/customers')
+
+    if (Array.isArray((data as { data?: User[] }).data)) return (data as { data?: User[] }).data as User[]
+
+    if (Array.isArray(data)) return data
+  } catch (error) {
+    console.error('Falha ao buscar clientes no backend:', error)
+  }
+
   return customers
 })

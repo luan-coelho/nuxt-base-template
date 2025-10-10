@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { AuthFormField, FormSubmitEvent } from '@nuxt/ui'
+import { ref, watch } from 'vue'
 import * as z from 'zod'
 
 const fields: AuthFormField[] = [
@@ -27,17 +28,6 @@ const fields: AuthFormField[] = [
   }
 ]
 
-const providers = [
-  {
-    label: 'Google',
-    icon: 'i-simple-icons-google',
-    onClick: () => {
-      // TODO: Implementar login com Google
-      console.log('Google login não implementado ainda')
-    }
-  }
-]
-
 const schema = z.object({
   email: z.string().email('Informe um email válido'),
   password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres'),
@@ -46,8 +36,27 @@ const schema = z.object({
 
 type Schema = z.output<typeof schema>
 
-async function onSubmit(payload: FormSubmitEvent<Schema>) {
-  console.log('Form submitted with:', payload)
+const { login, loading, errorMessage } = useAuth()
+const route = useRoute()
+const router = useRouter()
+const formError = ref<string | null>(null)
+
+watch(errorMessage, value => {
+  formError.value = value
+})
+
+async function onSubmit({ data }: FormSubmitEvent<Schema>) {
+  formError.value = null
+
+  const { ok, message } = await login(data)
+
+  if (!ok) {
+    formError.value = message ?? 'Credenciais inválidas. Verifique os dados e tente novamente.'
+    return
+  }
+
+  const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
+  await router.push(redirect)
 }
 </script>
 
@@ -61,12 +70,14 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
         description="Acesse sua conta"
         icon="i-lucide-user"
         :fields="fields"
-        :providers="providers"
         :submit="{
           label: 'Acessar',
-          size: 'xl'
+          size: 'xl',
+          loading
         }"
         @submit="onSubmit" />
+
+      <UAlert v-if="formError" class="mt-4" color="error" icon="i-lucide-alert-triangle" :description="formError" />
     </UPageCard>
   </div>
 </template>

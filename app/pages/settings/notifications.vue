@@ -1,4 +1,8 @@
 <script setup lang="ts">
+definePageMeta({
+  middleware: ['authenticated']
+})
+
 const state = reactive<{ [key: string]: boolean }>({
   email: true,
   desktop: false,

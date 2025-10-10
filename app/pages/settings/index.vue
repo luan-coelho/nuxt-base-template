@@ -2,6 +2,10 @@
 import type { FormSubmitEvent } from '@nuxt/ui'
 import * as z from 'zod'
 
+definePageMeta({
+  middleware: ['authenticated']
+})
+
 const fileRef = ref<HTMLInputElement>()
 
 const profileSchema = z.object({
@@ -94,7 +98,7 @@ function onFileClick() {
         <div class="flex flex-wrap items-center gap-3">
           <UAvatar :src="profile.avatar" :alt="profile.name" size="lg" />
           <UButton label="Choose" color="neutral" @click="onFileClick" />
-          <input ref="fileRef" type="file" class="hidden" accept=".jpg, .jpeg, .png, .gif" @change="onFileChange">
+          <input ref="fileRef" type="file" class="hidden" accept=".jpg, .jpeg, .png, .gif" @change="onFileChange" />
         </div>
       </UFormField>
       <USeparator />

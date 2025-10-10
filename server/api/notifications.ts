@@ -1,4 +1,5 @@
 import { sub } from 'date-fns'
+import { callBackend } from '../utils/backend'
 
 const notifications = [
   {
@@ -279,6 +280,22 @@ const notifications = [
   }
 ]
 
-export default eventHandler(async () => {
+export default eventHandler(async event => {
+  await requireUserSession(event)
+
+  try {
+    const { data } = await callBackend<typeof notifications | { data?: typeof notifications }>(
+      event,
+      '/api/notifications'
+    )
+
+    if (Array.isArray((data as { data?: typeof notifications }).data))
+      return (data as { data?: typeof notifications }).data
+
+    if (Array.isArray(data)) return data
+  } catch (error) {
+    console.error('Falha ao buscar notificações no backend:', error)
+  }
+
   return notifications
 })

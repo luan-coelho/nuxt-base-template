@@ -5,6 +5,10 @@ import type { Row } from '@tanstack/table-core'
 import type { User } from '~/types'
 import { upperFirst } from 'scule'
 
+definePageMeta({
+  middleware: ['authenticated']
+})
+
 const UAvatar = resolveComponent('UAvatar')
 const UButton = resolveComponent('UButton')
 const UBadge = resolveComponent('UBadge')
@@ -77,15 +81,15 @@ const columns: TableColumn<User>[] = [
     id: 'select',
     header: ({ table }) =>
       h(UCheckbox, {
-        'modelValue': table.getIsSomePageRowsSelected() ? 'indeterminate' : table.getIsAllPageRowsSelected(),
+        modelValue: table.getIsSomePageRowsSelected() ? 'indeterminate' : table.getIsAllPageRowsSelected(),
         'onUpdate:modelValue': (value: boolean | 'indeterminate') => table.toggleAllPageRowsSelected(!!value),
-        'ariaLabel': 'Select all'
+        'aria-label': 'Select all'
       }),
     cell: ({ row }) =>
       h(UCheckbox, {
-        'modelValue': row.getIsSelected(),
+        modelValue: row.getIsSelected(),
         'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
-        'ariaLabel': 'Select row'
+        'aria-label': 'Select row'
       })
   },
   {

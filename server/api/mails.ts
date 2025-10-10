@@ -1,4 +1,5 @@
 import { sub } from 'date-fns'
+import { callBackend } from '../utils/backend'
 
 const mails = [
   {
@@ -707,6 +708,18 @@ Emergency: (555) 987-6544`,
   }
 ]
 
-export default eventHandler(async () => {
+export default eventHandler(async event => {
+  await requireUserSession(event)
+
+  try {
+    const { data } = await callBackend<typeof mails | { data?: typeof mails }>(event, '/api/mails')
+
+    if (Array.isArray((data as { data?: typeof mails }).data)) return (data as { data?: typeof mails }).data
+
+    if (Array.isArray(data)) return data
+  } catch (error) {
+    console.error('Falha ao buscar emails no backend:', error)
+  }
+
   return mails
 })

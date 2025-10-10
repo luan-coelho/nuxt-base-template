@@ -2,6 +2,10 @@
 import type { FormError } from '@nuxt/ui'
 import * as z from 'zod'
 
+definePageMeta({
+  middleware: ['authenticated']
+})
+
 const passwordSchema = z.object({
   current: z.string().min(8, 'Must be at least 8 characters'),
   new: z.string().min(8, 'Must be at least 8 characters')

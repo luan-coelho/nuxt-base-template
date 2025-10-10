@@ -2,7 +2,8 @@
 import AuthForm from '~/components/auth/auth-form.vue'
 
 definePageMeta({
-  layout: false
+  layout: false,
+  middleware: ['guest']
 })
 </script>
 

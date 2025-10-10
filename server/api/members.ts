@@ -1,3 +1,5 @@
+import { callBackend } from '../utils/backend'
+
 const members = [
   {
     name: 'Anthony Fu',
@@ -67,6 +69,18 @@ const members = [
   }
 ]
 
-export default eventHandler(async () => {
+export default eventHandler(async event => {
+  await requireUserSession(event)
+
+  try {
+    const { data } = await callBackend<typeof members | { data?: typeof members }>(event, '/api/members')
+
+    if (Array.isArray((data as { data?: typeof members }).data)) return (data as { data?: typeof members }).data
+
+    if (Array.isArray(data)) return data
+  } catch (error) {
+    console.error('Falha ao buscar membros no backend:', error)
+  }
+
   return members
 })

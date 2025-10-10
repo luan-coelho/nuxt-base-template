@@ -7,6 +7,9 @@ defineProps<{
 
 const colorMode = useColorMode()
 const appConfig = useAppConfig()
+const router = useRouter()
+const { session, logout } = useAuth()
+const loggingOut = ref(false)
 
 const colors = [
   'red',
@@ -30,8 +33,22 @@ const colors = [
 const neutrals = ['slate', 'gray', 'zinc', 'neutral', 'stone']
 
 const user = computed(() => {
+  const current = session.user.value
+
+  if (current) {
+    return {
+      name: current.name,
+      email: current.email,
+      avatar: {
+        src: `https://ui-avatars.com/api/?name=${encodeURIComponent(current.name)}&background=random`,
+        alt: current.name
+      }
+    }
+  }
+
   return {
-    name: 'Guest',
+    name: 'Convidado',
+    email: '',
     avatar: {
       src: 'https://ui-avatars.com/api/?name=Guest&background=random',
       alt: 'Guest'
@@ -39,11 +56,25 @@ const user = computed(() => {
   }
 })
 
+async function handleLogout(event?: Event) {
+  event?.preventDefault()
+  if (loggingOut.value) return
+
+  loggingOut.value = true
+  try {
+    await logout()
+    await router.replace('/auth/signin')
+  } finally {
+    loggingOut.value = false
+  }
+}
+
 const items = computed<DropdownMenuItem[][]>(() => [
   [
     {
       type: 'label',
       label: user.value.name,
+      description: user.value.email || undefined,
       avatar: user.value.avatar
     }
   ],
@@ -202,7 +233,9 @@ const items = computed<DropdownMenuItem[][]>(() => [
     {
       label: 'Log out',
       icon: 'i-lucide-log-out',
-      onSelect: () => {}
+      color: 'error',
+      disabled: loggingOut.value,
+      onSelect: handleLogout
     }
   ]
 ])
