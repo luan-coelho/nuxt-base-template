@@ -51,8 +51,7 @@ defineShortcuts({
         el => {
           mailsRefs[mail.id] = el as Element
         }
-      "
-    >
+      ">
       <div
         class="cursor-pointer border-l-2 p-4 text-sm transition-colors sm:px-6"
         :class="[
@@ -61,8 +60,7 @@ defineShortcuts({
             ? 'border-primary bg-primary/10'
             : 'hover:border-primary hover:bg-primary/5 border-(--ui-bg)'
         ]"
-        @click="selectedMail = mail"
-      >
+        @click="selectedMail = mail">
         <div class="flex items-center justify-between" :class="[mail.unread && 'font-semibold']">
           <div class="flex items-center gap-3">
             {{ mail.from.name }}

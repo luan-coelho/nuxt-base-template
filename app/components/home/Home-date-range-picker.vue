@@ -89,8 +89,7 @@ const selectRange = (range: { days?: number, months?: number, years?: number }) 
       <template #trailing>
         <UIcon
           name="i-lucide-chevron-down"
-          class="text-dimmed size-5 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"
-        />
+          class="text-dimmed size-5 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
       </template>
     </UButton>
 
@@ -106,8 +105,7 @@ const selectRange = (range: { days?: number, months?: number, years?: number }) 
             class="rounded-none px-4"
             :class="[isRangeSelected(range) ? 'bg-elevated' : 'hover:bg-elevated/50']"
             truncate
-            @click="selectRange(range)"
-          />
+            @click="selectRange(range)" />
         </div>
 
         <UCalendar v-model="calendarRange" class="p-2" :number-of-months="2" range />

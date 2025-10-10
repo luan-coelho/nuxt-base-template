@@ -120,8 +120,7 @@ function onSubmit() {
             :rows="4"
             :disabled="loading"
             class="w-full"
-            :ui="{ base: 'p-0 resize-none' }"
-          />
+            :ui="{ base: 'p-0 resize-none' }" />
 
           <div class="flex items-center justify-between">
             <UTooltip text="Attach file">

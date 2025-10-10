@@ -218,8 +218,7 @@ const pagination = ref({
           class="max-w-sm"
           icon="i-lucide-search"
           placeholder="Filter emails..."
-          @update:model-value="table?.tableApi?.getColumn('email')?.setFilterValue($event)"
-        />
+          @update:model-value="table?.tableApi?.getColumn('email')?.setFilterValue($event)" />
 
         <div class="flex flex-wrap items-center gap-1.5">
           <CustomersDeleteModal :count="table?.tableApi?.getFilteredSelectedRowModel().rows.length">
@@ -228,8 +227,7 @@ const pagination = ref({
               label="Delete"
               color="error"
               variant="subtle"
-              icon="i-lucide-trash"
-            >
+              icon="i-lucide-trash">
               <template #trailing>
                 <UKbd>
                   {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length }}
@@ -248,8 +246,7 @@ const pagination = ref({
             ]"
             :ui="{ trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200' }"
             placeholder="Filter status"
-            class="min-w-28"
-          />
+            class="min-w-28" />
           <UDropdownMenu
             :items="
               table?.tableApi
@@ -267,8 +264,7 @@ const pagination = ref({
                   }
                 }))
             "
-            :content="{ align: 'end' }"
-          >
+            :content="{ align: 'end' }">
             <UButton label="Display" color="neutral" variant="outline" trailing-icon="i-lucide-settings-2" />
           </UDropdownMenu>
         </div>
@@ -293,8 +289,7 @@ const pagination = ref({
           tbody: '[&>tr]:last:[&>td]:border-b-0',
           th: 'py-2 first:rounded-l-lg last:rounded-r-lg border-y border-default first:border-l last:border-r',
           td: 'border-b border-default'
-        }"
-      />
+        }" />
 
       <div class="border-default mt-auto flex items-center justify-between gap-3 border-t pt-4">
         <div class="text-muted text-sm">
@@ -307,8 +302,7 @@ const pagination = ref({
             :default-page="(table?.tableApi?.getState().pagination.pageIndex || 0) + 1"
             :items-per-page="table?.tableApi?.getState().pagination.pageSize"
             :total="table?.tableApi?.getFilteredRowModel().rows.length"
-            @update:page="(p: number) => table?.tableApi?.setPageIndex(p - 1)"
-          />
+            @update:page="(p: number) => table?.tableApi?.setPageIndex(p - 1)" />
         </div>
       </div>
     </template>

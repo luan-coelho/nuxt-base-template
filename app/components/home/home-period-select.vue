@@ -40,6 +40,5 @@ watch(periods, () => {
       value: 'capitalize',
       itemLabel: 'capitalize',
       trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200'
-    }"
-  />
+    }" />
 </template>

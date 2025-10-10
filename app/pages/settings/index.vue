@@ -54,8 +54,7 @@ function onFileClick() {
       description="These informations will be displayed publicly."
       variant="naked"
       orientation="horizontal"
-      class="mb-4"
-    >
+      class="mb-4">
       <UButton form="settings" label="Save changes" color="neutral" type="submit" class="w-fit lg:ms-auto" />
     </UPageCard>
 
@@ -65,8 +64,7 @@ function onFileClick() {
         label="Name"
         description="Will appear on receipts, invoices, and other communication."
         required
-        class="flex items-start justify-between gap-4 max-sm:flex-col"
-      >
+        class="flex items-start justify-between gap-4 max-sm:flex-col">
         <UInput v-model="profile.name" autocomplete="off" />
       </UFormField>
       <USeparator />
@@ -75,8 +73,7 @@ function onFileClick() {
         label="Email"
         description="Used to sign in, for email receipts and product updates."
         required
-        class="flex items-start justify-between gap-4 max-sm:flex-col"
-      >
+        class="flex items-start justify-between gap-4 max-sm:flex-col">
         <UInput v-model="profile.email" type="email" autocomplete="off" />
       </UFormField>
       <USeparator />
@@ -85,8 +82,7 @@ function onFileClick() {
         label="Username"
         description="Your unique username for logging in and your profile URL."
         required
-        class="flex items-start justify-between gap-4 max-sm:flex-col"
-      >
+        class="flex items-start justify-between gap-4 max-sm:flex-col">
         <UInput v-model="profile.username" type="username" autocomplete="off" />
       </UFormField>
       <USeparator />
@@ -94,8 +90,7 @@ function onFileClick() {
         name="avatar"
         label="Avatar"
         description="JPG, GIF or PNG. 1MB Max."
-        class="flex justify-between gap-4 max-sm:flex-col sm:items-center"
-      >
+        class="flex justify-between gap-4 max-sm:flex-col sm:items-center">
         <div class="flex flex-wrap items-center gap-3">
           <UAvatar :src="profile.avatar" :alt="profile.name" size="lg" />
           <UButton label="Choose" color="neutral" @click="onFileClick" />
@@ -108,8 +103,7 @@ function onFileClick() {
         label="Bio"
         description="Brief description for your profile. URLs are hyperlinked."
         class="flex items-start justify-between gap-4 max-sm:flex-col"
-        :ui="{ container: 'w-full' }"
-      >
+        :ui="{ container: 'w-full' }">
         <UTextarea v-model="profile.bio" :rows="5" autoresize class="w-full" />
       </UFormField>
     </UPageCard>

@@ -41,8 +41,7 @@ const validate = (state: Partial<PasswordSchema>): FormError[] => {
   <UPageCard
     title="Account"
     description="No longer want to use our service? You can delete your account here. This action is not reversible. All information related to this account will be deleted permanently."
-    class="from-error/10 to-default bg-gradient-to-tl from-5%"
-  >
+    class="from-error/10 to-default bg-gradient-to-tl from-5%">
     <template #footer>
       <UButton label="Delete account" color="error" />
     </template>

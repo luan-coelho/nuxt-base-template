@@ -24,8 +24,7 @@ const items = [
     <li
       v-for="(member, index) in members"
       :key="index"
-      class="flex items-center justify-between gap-3 px-4 py-3 sm:px-6"
-    >
+      class="flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
       <div class="flex min-w-0 items-center gap-3">
         <UAvatar v-bind="member.avatar" size="md" />
 
@@ -44,8 +43,7 @@ const items = [
           :model-value="member.role"
           :items="['member', 'owner']"
           color="neutral"
-          :ui="{ value: 'capitalize', item: 'capitalize' }"
-        />
+          :ui="{ value: 'capitalize', item: 'capitalize' }" />
 
         <UDropdownMenu :items="items" :content="{ align: 'end' }">
           <UButton icon="i-lucide-ellipsis-vertical" color="neutral" variant="ghost" />
