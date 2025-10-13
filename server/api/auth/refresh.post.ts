@@ -1,16 +1,17 @@
-import type { AuthErrorResponse, AuthSuccessData, AuthSuccessResponse } from '~/types'
+import type { ApiResponse, AuthSuccessData, CookieApiResponse } from '~/types'
 import { createError } from 'h3'
-import { callBackend } from '../../utils/backend'
+import { callBackend, isApiErrorResponse, normalizeCookieAuthResponse } from '../../utils/backend'
 
 export default defineEventHandler(async event => {
-  const { data, status } = await callBackend<AuthSuccessResponse | AuthErrorResponse>(event, '/auth/refresh', {
-    method: 'POST'
-  })
+  const { data, status } = await callBackend<CookieApiResponse | ApiResponse<AuthSuccessData> | AuthSuccessData>(
+    event,
+    '/auth/refresh',
+    {
+      method: 'POST'
+    }
+  )
 
-  const isErrorResponse = (payload: AuthSuccessResponse | AuthErrorResponse): payload is AuthErrorResponse =>
-    Boolean(payload && typeof payload === 'object' && 'success' in payload && payload.success === false)
-
-  if (isErrorResponse(data)) {
+  if (isApiErrorResponse<AuthSuccessData>(data)) {
     throw createError({
       statusCode: status,
       message: data.error?.message ?? 'Não foi possível renovar a sessão.',
@@ -18,9 +19,9 @@ export default defineEventHandler(async event => {
     })
   }
 
-  const authData: AuthSuccessData = 'data' in data && data.data ? data.data : (data as unknown as AuthSuccessData)
+  const authData = normalizeCookieAuthResponse(data)
 
-  if (!authData?.user) {
+  if (!authData?.authResponse?.user) {
     throw createError({
       statusCode: 502,
       message: 'Resposta inválida do serviço de autenticação.',
@@ -29,12 +30,12 @@ export default defineEventHandler(async event => {
   }
 
   await setUserSession(event, {
-    user: authData.user,
-    expiresAt: authData.expiresAt
+    user: {
+      ...authData.authResponse.user,
+      id: String(authData.authResponse.user.id)
+    },
+    expiresAt: authData.authResponse.expiresAt as string | undefined
   })
 
-  return {
-    success: true,
-    data: authData
-  }
+  return authData
 })

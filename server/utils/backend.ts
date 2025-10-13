@@ -1,4 +1,5 @@
 import { useRuntimeConfig } from '#imports'
+import type { ApiResponse, AuthSuccessData, CookieApiResponse } from '~/types'
 import { appendResponseHeader, createError, getRequestHeader, type H3Event } from 'h3'
 import { $fetch, FetchError, type FetchOptions } from 'ofetch'
 
@@ -69,4 +70,61 @@ export async function callBackend<T = unknown>(
 
     throw error
   }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+export function isApiResponse<T>(payload: unknown): payload is ApiResponse<T> {
+  return isRecord(payload) && 'success' in payload && typeof (payload as { success: unknown }).success === 'boolean'
+}
+
+export function isApiErrorResponse<T>(payload: unknown): payload is ApiResponse<T> & { success: false } {
+  return isApiResponse<T>(payload) && payload.success === false
+}
+
+export function isApiSuccessResponse<T>(payload: unknown): payload is ApiResponse<T> & { success: true; data: T } {
+  return isApiResponse<T>(payload) && payload.success === true && 'data' in payload
+}
+
+export function extractApiData<T>(payload: ApiResponse<T> | T | undefined): T | undefined {
+  if (!payload) return undefined
+  if (isApiSuccessResponse<T>(payload)) return payload.data
+  if (!isApiResponse<T>(payload)) return payload as T
+  return undefined
+}
+
+export function isAuthSuccessData(payload: unknown): payload is AuthSuccessData {
+  if (!isRecord(payload) || !('user' in payload)) return false
+  const maybeUser = (payload as Record<string, unknown>).user
+  if (!isRecord(maybeUser)) return false
+  const { id, name, email } = maybeUser as Record<string, unknown>
+  const hasId = typeof id === 'string' || typeof id === 'number'
+  return hasId && typeof name === 'string' && typeof email === 'string'
+}
+
+export function isCookieApiResponse(payload: unknown): payload is CookieApiResponse {
+  if (!isRecord(payload)) return false
+  const { accessToken, refreshToken, authResponse } = payload as Record<string, unknown>
+  return (
+    (typeof accessToken === 'undefined' || typeof accessToken === 'string') &&
+    (typeof refreshToken === 'undefined' || typeof refreshToken === 'string') &&
+    isAuthSuccessData(authResponse)
+  )
+}
+
+export function normalizeCookieAuthResponse(payload: unknown): CookieApiResponse | null {
+  if (isCookieApiResponse(payload)) return payload
+  if (isApiSuccessResponse<AuthSuccessData>(payload)) {
+    return {
+      authResponse: payload.data
+    }
+  }
+  if (isAuthSuccessData(payload)) {
+    return {
+      authResponse: payload
+    }
+  }
+  return null
 }

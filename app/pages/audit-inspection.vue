@@ -7,7 +7,7 @@ definePageMeta({
 <template>
   <UDashboardPanel>
     <template #header>
-      <UDashboardNavbar title="Home">
+      <UDashboardNavbar title="Inspeção e Auditoria">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -18,7 +18,7 @@ definePageMeta({
 
     <template #body>
       <div class="flex flex-wrap items-center justify-between gap-1.5">
-        <h1>Hello World</h1>
+        <h1>Inspeção e Auditoria</h1>
       </div>
     </template>
   </UDashboardPanel>

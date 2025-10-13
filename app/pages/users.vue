@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
-import type { Row } from '@tanstack/table-core'
-import type { DirectoryUser } from '~/types'
+import type { User } from '~/types'
 import { upperFirst } from 'scule'
 
 definePageMeta({
@@ -11,9 +10,7 @@ definePageMeta({
 const UButton = resolveComponent('UButton')
 const UBadge = resolveComponent('UBadge')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
-const UCheckbox = resolveComponent('UCheckbox')
 
-const toast = useToast()
 const table = useTemplateRef('table')
 
 const columnFilters = ref([
@@ -24,7 +21,7 @@ const columnFilters = ref([
 ])
 const columnVisibility = ref()
 interface UsersPage {
-  content: DirectoryUser[]
+  content: User[]
   page: number
   size: number
   totalElements: number
@@ -40,7 +37,7 @@ interface UsersApiResponse {
   data: UsersPage
 }
 
-const rowSelection = ref<Record<string, boolean>>({})
+// Removido: seleção de linhas da tabela
 const page = ref(1)
 const size = ref(20)
 
@@ -56,15 +53,13 @@ const defaultUsersPage: UsersPage = {
   empty: true
 }
 
-const apiUrl = computed(() => `http://localhost:8080/api/users`)
-
-const { data, status } = await useFetch<UsersApiResponse>(() => apiUrl.value, {
+const { data, status } = await useFetch<UsersApiResponse>('http://localhost:8080/api/users', {
   lazy: false,
   credentials: 'include'
 })
 
 const meta = computed<UsersPage>(() => data.value?.data ?? defaultUsersPage)
-const users = computed<DirectoryUser[]>(() => meta.value.content)
+const users = computed<User[]>(() => meta.value.content)
 
 watch(data, newVal => {
   if (newVal?.data?.size) {
@@ -79,78 +74,29 @@ watchEffect(() => {
   }
 })
 
-watch(users, () => {
-  rowSelection.value = {}
-})
+// Removido: reset de seleção ao atualizar usuários
 
-function getRowItems(row: Row<DirectoryUser>) {
+function getRowItems() {
   return [
     {
       type: 'label',
-      label: 'Actions'
-    },
-    {
-      label: 'Copy user ID',
-      icon: 'i-lucide-copy',
-      onSelect() {
-        navigator.clipboard.writeText(row.original.id.toString())
-        toast.add({
-          title: 'Copied to clipboard',
-          description: 'User ID copied to clipboard'
-        })
-      }
+      label: 'Ações'
     },
     {
       type: 'separator'
     },
     {
-      label: 'View user details',
+      label: 'Visualizar detalhes do usuário',
       icon: 'i-lucide-list'
-    },
-    {
-      label: 'View user payments',
-      icon: 'i-lucide-wallet'
-    },
-    {
-      type: 'separator'
-    },
-    {
-      label: 'Delete user',
-      icon: 'i-lucide-trash',
-      color: 'error',
-      onSelect() {
-        toast.add({
-          title: 'User deleted',
-          description: 'The user has been deleted.'
-        })
-      }
     }
   ]
 }
 
-const columns: TableColumn<DirectoryUser>[] = [
-  {
-    id: 'select',
-    header: ({ table }) =>
-      h(UCheckbox, {
-        modelValue: table.getIsSomePageRowsSelected() ? 'indeterminate' : table.getIsAllPageRowsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') => table.toggleAllPageRowsSelected(!!value),
-        'aria-label': 'Select all'
-      }),
-    cell: ({ row }) =>
-      h(UCheckbox, {
-        modelValue: row.getIsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
-        'aria-label': 'Select row'
-      })
-  },
-  {
-    accessorKey: 'id',
-    header: 'ID'
-  },
+const columns: TableColumn<User>[] = [
+  // Removido: coluna de seleção
   {
     accessorKey: 'name',
-    header: 'Name',
+    header: 'Nome',
     cell: ({ row }) => h('span', { class: 'font-medium text-highlighted' }, row.original.name)
   },
   {
@@ -174,17 +120,17 @@ const columns: TableColumn<DirectoryUser>[] = [
   },
   {
     accessorKey: 'roles',
-    header: 'Roles',
+    header: 'Funções',
     cell: ({ row }) =>
       h(
         'div',
         { class: 'flex flex-wrap gap-1.5' },
-        row.original.roles.map(role => h(UBadge, { variant: 'subtle', class: 'capitalize' }, () => role))
+        row.original.roles?.map(role => h(UBadge, { variant: 'subtle', class: 'capitalize' }, () => role))
       )
   },
   {
     id: 'actions',
-    cell: ({ row }) => {
+    cell: () => {
       return h(
         'div',
         { class: 'text-right' },
@@ -194,7 +140,7 @@ const columns: TableColumn<DirectoryUser>[] = [
             content: {
               align: 'end'
             },
-            items: getRowItems(row)
+            items: getRowItems()
           },
           () =>
             h(UButton, {
@@ -230,24 +176,11 @@ const columns: TableColumn<DirectoryUser>[] = [
           :model-value="table?.tableApi?.getColumn('email')?.getFilterValue() as string"
           class="max-w-sm"
           icon="i-lucide-search"
-          placeholder="Filter emails..."
+          placeholder="Filtrar emails..."
           @update:model-value="table?.tableApi?.getColumn('email')?.setFilterValue($event)" />
 
         <div class="flex flex-wrap items-center gap-1.5">
-          <UsersDeleteModal :count="table?.tableApi?.getFilteredSelectedRowModel().rows.length">
-            <UButton
-              v-if="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
-              label="Delete"
-              color="error"
-              variant="subtle"
-              icon="i-lucide-trash">
-              <template #trailing>
-                <UKbd>
-                  {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length }}
-                </UKbd>
-              </template>
-            </UButton>
-          </UsersDeleteModal>
+          <!-- Removido: modal de exclusão baseada em seleção -->
           <UDropdownMenu
             :items="
               table?.tableApi
@@ -275,7 +208,6 @@ const columns: TableColumn<DirectoryUser>[] = [
         ref="table"
         v-model:column-filters="columnFilters"
         v-model:column-visibility="columnVisibility"
-        v-model:row-selection="rowSelection"
         class="shrink-0"
         :data="users"
         :columns="columns"
@@ -289,10 +221,7 @@ const columns: TableColumn<DirectoryUser>[] = [
         }" />
 
       <div class="border-default mt-auto flex items-center justify-between gap-3 border-t pt-4">
-        <div class="text-muted text-sm">
-          {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
-          {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} row(s) selected.
-        </div>
+        <!-- Removido: texto de seleção de linhas -->
 
         <div class="flex items-center gap-1.5">
           <UPagination

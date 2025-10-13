@@ -4,7 +4,7 @@ import { reactive, ref, watch } from 'vue'
 import * as z from 'zod'
 
 const schema = z.object({
-  email: z.string().email('Informe um email válido'),
+  email: z.email('Informe um email válido'),
   password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres'),
   remember: z.boolean().optional()
 })
@@ -62,8 +62,8 @@ async function onSubmit({ data }: FormSubmitEvent<Schema>) {
             <UIcon name="i-lucide-lock" class="text-primary-500 dark:text-primary-400 size-6" />
           </div>
           <div>
-            <h1 class="text-2xl font-semibold">Bem-vindo de volta</h1>
-            <p class="text-sm text-slate-600 dark:text-white/60">Entre com suas credenciais para acessar o painel</p>
+            <h1 class="text-2xl font-semibold">Bem-vindo</h1>
+            <p class="text-sm text-slate-600 dark:text-white/60">Entre com suas credenciais para acessar o sistema</p>
           </div>
         </div>
       </template>
@@ -114,7 +114,7 @@ async function onSubmit({ data }: FormSubmitEvent<Schema>) {
 
         <div class="space-y-3">
           <UButton type="submit" size="xl" block :loading="loading" class="justify-center" icon="i-lucide-log-in">
-            Acessar conta
+            Acessar
           </UButton>
         </div>
       </UForm>

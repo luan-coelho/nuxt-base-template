@@ -1,4 +1,4 @@
-import type { AuthResponse, RegisterPayload, SignInPayload } from '~/types'
+import type { ApiResponse, CookieApiResponse, RegisterPayload, SignInPayload, User } from '~/types'
 
 interface AuthResult {
   ok: boolean
@@ -11,8 +11,10 @@ function extractErrorMessage(error: unknown): string {
   if (error && typeof error === 'object') {
     const maybeData = (error as { data?: unknown }).data
     if (maybeData && typeof maybeData === 'object') {
-      const data = maybeData as AuthResponse
-      if ('success' in data && !data.success) return data.error.message
+      const data = maybeData as ApiResponse
+      if (data.error && typeof data.error.message === 'string') {
+        return data.error.message
+      }
     }
 
     const maybeMessage = (error as { message?: string }).message
@@ -32,7 +34,7 @@ export function useAuth() {
     errorMessage.value = null
 
     try {
-      await $fetch<AuthResponse>('/api/auth/signin', {
+      await $fetch<CookieApiResponse>('/api/auth/signin', {
         method: 'POST',
         body: payload
       })
@@ -54,7 +56,7 @@ export function useAuth() {
     errorMessage.value = null
 
     try {
-      await $fetch<AuthResponse>('/api/auth/register', {
+      await $fetch<CookieApiResponse>('/api/auth/register', {
         method: 'POST',
         body: payload
       })
@@ -71,7 +73,7 @@ export function useAuth() {
 
   async function refresh(): Promise<void> {
     try {
-      await $fetch<AuthResponse>('/api/auth/refresh', { method: 'POST' })
+      await $fetch<CookieApiResponse>('/api/auth/refresh', { method: 'POST' })
       await session.fetch()
     } catch (error) {
       errorMessage.value = extractErrorMessage(error)
@@ -80,7 +82,7 @@ export function useAuth() {
 
   async function fetchCurrentUser(): Promise<void> {
     try {
-      await $fetch<AuthResponse>('/api/auth/me')
+      await $fetch<User>('/api/auth/me')
       await session.fetch()
     } catch (error) {
       errorMessage.value = extractErrorMessage(error)
@@ -89,9 +91,10 @@ export function useAuth() {
 
   async function logout(): Promise<void> {
     try {
-      await $fetch<AuthResponse>('/api/auth/logout', { method: 'POST' })
-    } finally {
+      await $fetch('/api/auth/logout', { method: 'POST' })
       await session.clear()
+    } catch (error) {
+      errorMessage.value = extractErrorMessage(error)
     }
   }
 

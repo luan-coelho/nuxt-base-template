@@ -1,12 +1,23 @@
-import type { AuthResponse } from '~/types'
-import { callBackend } from '../../utils/backend'
+import type { ApiResponse } from '~/types'
+import { createError } from 'h3'
+import { callBackend, isApiErrorResponse } from '../../utils/backend'
 
 export default defineEventHandler(async event => {
-  const { data } = await callBackend<AuthResponse>(event, '/auth/logout', {
+  const { data, status } = await callBackend<ApiResponse<null>>(event, '/auth/logout', {
     method: 'POST'
   })
 
+  if (isApiErrorResponse<null>(data)) {
+    throw createError({
+      statusCode: status,
+      message: data.error?.message ?? 'Não foi possível encerrar a sessão.',
+      data
+    })
+  }
+
   await clearUserSession(event)
 
-  return data
+  return {
+    success: true
+  }
 })
