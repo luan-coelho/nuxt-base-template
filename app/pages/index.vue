@@ -17,9 +17,9 @@ const items = [
       to: '/inbox'
     },
     {
-      label: 'New customer',
+      label: 'New user',
       icon: 'i-lucide-user-plus',
-      to: '/customers'
+      to: '/users'
     }
   ]
 ] satisfies DropdownMenuItem[][]

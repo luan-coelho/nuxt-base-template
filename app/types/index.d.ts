@@ -59,9 +59,18 @@ export interface User {
   id: number
   name: string
   email: string
+  password?: string
+  roles?: string[]
   avatar?: AvatarProps
-  status: UserStatus
-  location: string
+  status?: UserStatus
+  location?: string
+}
+
+export interface DirectoryUser {
+  id: string
+  name: string
+  email: string
+  roles: string[]
 }
 
 export interface Mail {

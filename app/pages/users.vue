@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
-import { getPaginationRowModel } from '@tanstack/table-core'
 import type { Row } from '@tanstack/table-core'
-import type { User } from '~/types'
+import type { DirectoryUser } from '~/types'
 import { upperFirst } from 'scule'
 
 definePageMeta({
   middleware: ['authenticated']
 })
 
-const UAvatar = resolveComponent('UAvatar')
 const UButton = resolveComponent('UButton')
 const UBadge = resolveComponent('UBadge')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
@@ -25,26 +23,80 @@ const columnFilters = ref([
   }
 ])
 const columnVisibility = ref()
-const rowSelection = ref({ 1: true })
+interface UsersPage {
+  content: DirectoryUser[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+  first: boolean
+  last: boolean
+  numberOfElements: number
+  empty: boolean
+}
 
-const { data, status } = await useFetch<User[]>('/api/customers', {
-  lazy: true
+interface UsersApiResponse {
+  success: boolean
+  data: UsersPage
+}
+
+const rowSelection = ref<Record<string, boolean>>({})
+const page = ref(1)
+const size = ref(20)
+
+const defaultUsersPage: UsersPage = {
+  content: [],
+  page: 0,
+  size: 20,
+  totalElements: 0,
+  totalPages: 0,
+  first: true,
+  last: true,
+  numberOfElements: 0,
+  empty: true
+}
+
+const apiUrl = computed(() => `http://localhost:8080/api/users`)
+
+const { data, status } = await useFetch<UsersApiResponse>(() => apiUrl.value, {
+  lazy: false,
+  credentials: 'include'
 })
 
-function getRowItems(row: Row<User>) {
+const meta = computed<UsersPage>(() => data.value?.data ?? defaultUsersPage)
+const users = computed<DirectoryUser[]>(() => meta.value.content)
+
+watch(data, newVal => {
+  if (newVal?.data?.size) {
+    size.value = newVal.data.size
+  }
+})
+
+watchEffect(() => {
+  const resolvedPage = meta.value.page + 1
+  if (resolvedPage !== page.value) {
+    page.value = resolvedPage
+  }
+})
+
+watch(users, () => {
+  rowSelection.value = {}
+})
+
+function getRowItems(row: Row<DirectoryUser>) {
   return [
     {
       type: 'label',
       label: 'Actions'
     },
     {
-      label: 'Copy customer ID',
+      label: 'Copy user ID',
       icon: 'i-lucide-copy',
       onSelect() {
         navigator.clipboard.writeText(row.original.id.toString())
         toast.add({
           title: 'Copied to clipboard',
-          description: 'Customer ID copied to clipboard'
+          description: 'User ID copied to clipboard'
         })
       }
     },
@@ -52,31 +104,31 @@ function getRowItems(row: Row<User>) {
       type: 'separator'
     },
     {
-      label: 'View customer details',
+      label: 'View user details',
       icon: 'i-lucide-list'
     },
     {
-      label: 'View customer payments',
+      label: 'View user payments',
       icon: 'i-lucide-wallet'
     },
     {
       type: 'separator'
     },
     {
-      label: 'Delete customer',
+      label: 'Delete user',
       icon: 'i-lucide-trash',
       color: 'error',
       onSelect() {
         toast.add({
-          title: 'Customer deleted',
-          description: 'The customer has been deleted.'
+          title: 'User deleted',
+          description: 'The user has been deleted.'
         })
       }
     }
   ]
 }
 
-const columns: TableColumn<User>[] = [
+const columns: TableColumn<DirectoryUser>[] = [
   {
     id: 'select',
     header: ({ table }) =>
@@ -99,18 +151,7 @@ const columns: TableColumn<User>[] = [
   {
     accessorKey: 'name',
     header: 'Name',
-    cell: ({ row }) => {
-      return h('div', { class: 'flex items-center gap-3' }, [
-        h(UAvatar, {
-          ...row.original.avatar,
-          size: 'lg'
-        }),
-        h('div', undefined, [
-          h('p', { class: 'font-medium text-highlighted' }, row.original.name),
-          h('p', { class: '' }, `@${row.original.name}`)
-        ])
-      ])
-    }
+    cell: ({ row }) => h('span', { class: 'font-medium text-highlighted' }, row.original.name)
   },
   {
     accessorKey: 'email',
@@ -132,23 +173,14 @@ const columns: TableColumn<User>[] = [
     }
   },
   {
-    accessorKey: 'location',
-    header: 'Location',
-    cell: ({ row }) => row.original.location
-  },
-  {
-    accessorKey: 'status',
-    header: 'Status',
-    filterFn: 'equals',
-    cell: ({ row }) => {
-      const color = {
-        subscribed: 'success' as const,
-        unsubscribed: 'error' as const,
-        bounced: 'warning' as const
-      }[row.original.status]
-
-      return h(UBadge, { class: 'capitalize', variant: 'subtle', color }, () => row.original.status)
-    }
+    accessorKey: 'roles',
+    header: 'Roles',
+    cell: ({ row }) =>
+      h(
+        'div',
+        { class: 'flex flex-wrap gap-1.5' },
+        row.original.roles.map(role => h(UBadge, { variant: 'subtle', class: 'capitalize' }, () => role))
+      )
   },
   {
     id: 'actions',
@@ -176,41 +208,18 @@ const columns: TableColumn<User>[] = [
     }
   }
 ]
-
-const statusFilter = ref('all')
-
-watch(
-  () => statusFilter.value,
-  newVal => {
-    if (!table?.value?.tableApi) return
-
-    const statusColumn = table.value.tableApi.getColumn('status')
-    if (!statusColumn) return
-
-    if (newVal === 'all') {
-      statusColumn.setFilterValue(undefined)
-    } else {
-      statusColumn.setFilterValue(newVal)
-    }
-  }
-)
-
-const pagination = ref({
-  pageIndex: 0,
-  pageSize: 10
-})
 </script>
 
 <template>
-  <UDashboardPanel id="customers">
+  <UDashboardPanel id="users">
     <template #header>
-      <UDashboardNavbar title="Customers">
+      <UDashboardNavbar title="Usuários">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
 
         <template #right>
-          <CustomersAddModal />
+          <UsersAddModal />
         </template>
       </UDashboardNavbar>
     </template>
@@ -225,7 +234,7 @@ const pagination = ref({
           @update:model-value="table?.tableApi?.getColumn('email')?.setFilterValue($event)" />
 
         <div class="flex flex-wrap items-center gap-1.5">
-          <CustomersDeleteModal :count="table?.tableApi?.getFilteredSelectedRowModel().rows.length">
+          <UsersDeleteModal :count="table?.tableApi?.getFilteredSelectedRowModel().rows.length">
             <UButton
               v-if="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
               label="Delete"
@@ -238,19 +247,7 @@ const pagination = ref({
                 </UKbd>
               </template>
             </UButton>
-          </CustomersDeleteModal>
-
-          <USelect
-            v-model="statusFilter"
-            :items="[
-              { label: 'All', value: 'all' },
-              { label: 'Subscribed', value: 'subscribed' },
-              { label: 'Unsubscribed', value: 'unsubscribed' },
-              { label: 'Bounced', value: 'bounced' }
-            ]"
-            :ui="{ trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200' }"
-            placeholder="Filter status"
-            class="min-w-28" />
+          </UsersDeleteModal>
           <UDropdownMenu
             :items="
               table?.tableApi
@@ -279,12 +276,8 @@ const pagination = ref({
         v-model:column-filters="columnFilters"
         v-model:column-visibility="columnVisibility"
         v-model:row-selection="rowSelection"
-        v-model:pagination="pagination"
-        :pagination-options="{
-          getPaginationRowModel: getPaginationRowModel()
-        }"
         class="shrink-0"
-        :data="data"
+        :data="users"
         :columns="columns"
         :loading="status === 'pending'"
         :ui="{
@@ -303,10 +296,10 @@ const pagination = ref({
 
         <div class="flex items-center gap-1.5">
           <UPagination
-            :default-page="(table?.tableApi?.getState().pagination.pageIndex || 0) + 1"
-            :items-per-page="table?.tableApi?.getState().pagination.pageSize"
-            :total="table?.tableApi?.getFilteredRowModel().rows.length"
-            @update:page="(p: number) => table?.tableApi?.setPageIndex(p - 1)" />
+            v-if="meta.totalPages > 1"
+            v-model:page="page"
+            :items-per-page="meta.size"
+            :total="meta.totalElements" />
         </div>
       </div>
     </template>

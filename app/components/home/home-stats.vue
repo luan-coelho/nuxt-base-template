@@ -16,7 +16,7 @@ function formatCurrency(value: number): string {
 
 const baseStats = [
   {
-    title: 'Customers',
+    title: 'Users',
     icon: 'i-lucide-users',
     minValue: 400,
     maxValue: 1000,
@@ -79,7 +79,7 @@ const { data: stats } = await useAsyncData<Stat[]>(
       :key="index"
       :icon="stat.icon"
       :title="stat.title"
-      to="/customers"
+      to="/users"
       variant="subtle"
       :ui="{
         container: 'gap-y-1.5',
