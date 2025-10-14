@@ -21,6 +21,25 @@ interface AuthUser {
   roles: string[]
 }
 
+export interface User {
+  id: string
+  name: string
+  email: string
+  cpf: string
+  temporaryPassword: string
+  mustChangePassword: boolean
+  roles: string[]
+  createdAt: string
+  updatedAt: string
+  active: boolean
+}
+
+export interface CreateUserPayload {
+  name: string
+  email: string
+  cpf: string
+}
+
 export interface AuthSuccessData {
   expiresAt?: string | Date
   user: AuthUser

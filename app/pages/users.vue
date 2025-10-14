@@ -53,13 +53,18 @@ const defaultUsersPage: UsersPage = {
   empty: true
 }
 
-const { data, status } = await useFetch<UsersApiResponse>('http://localhost:8080/api/users', {
+const { data, status, refresh } = await useFetch<UsersApiResponse>('http://localhost:8080/api/users', {
   lazy: false,
   credentials: 'include'
 })
 
 const meta = computed<UsersPage>(() => data.value?.data ?? defaultUsersPage)
 const users = computed<User[]>(() => meta.value.content)
+
+function handleUserCreated() {
+  // Atualiza a lista de usuários
+  refresh()
+}
 
 watch(data, newVal => {
   if (newVal?.data?.size) {
@@ -165,7 +170,7 @@ const columns: TableColumn<User>[] = [
         </template>
 
         <template #right>
-          <UsersAddModal />
+          <UsersAddModal @user-created="handleUserCreated" />
         </template>
       </UDashboardNavbar>
     </template>
