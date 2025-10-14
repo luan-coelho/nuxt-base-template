@@ -3,10 +3,6 @@ import type { TableColumn } from '@nuxt/ui'
 import type { User } from '~/types'
 import { upperFirst } from 'scule'
 
-definePageMeta({
-  middleware: ['authenticated']
-})
-
 const UButton = resolveComponent('UButton')
 const UBadge = resolveComponent('UBadge')
 const UDropdownMenu = resolveComponent('UDropdownMenu')

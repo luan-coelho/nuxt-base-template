@@ -1,25 +1,24 @@
 <script setup lang="ts">
-definePageMeta({
-  middleware: ['authenticated']
-})
+import { authClient } from '~/lib/auth-client'
+
+const session = authClient.useSession()
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar title="Home">
-        <template #leading>
-          <UDashboardSidebarCollapse />
-        </template>
-
-        <template #right></template>
-      </UDashboardNavbar>
-    </template>
-
-    <template #body>
-      <div class="flex flex-wrap items-center justify-between gap-1.5">
-        <h1>Hello World</h1>
-      </div>
-    </template>
-  </UDashboardPanel>
+  <div>
+    <button
+      v-if="!session?.data"
+      @click="
+        () =>
+          authClient.signIn.social({
+            provider: 'github'
+          })
+      ">
+      Continue with GitHub
+    </button>
+    <div>
+      <pre>{{ session.data }}</pre>
+      <button v-if="session.data" @click="authClient.signOut()">Sign out</button>
+    </div>
+  </div>
 </template>

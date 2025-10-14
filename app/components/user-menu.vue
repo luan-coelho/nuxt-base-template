@@ -33,7 +33,7 @@ const colors = [
 const neutrals = ['slate', 'gray', 'zinc', 'neutral', 'stone']
 
 const user = computed(() => {
-  const current = session.user.value
+  const current = session.value.data?.user
 
   if (current) {
     return {
@@ -154,7 +154,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
           onSelect(e: Event) {
             e.preventDefault()
 
-            colorMode.preference = 'light'
+            colorMode.value = 'light'
           }
         },
         {
@@ -164,7 +164,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
           checked: colorMode.value === 'dark',
           onUpdateChecked(checked: boolean) {
             if (checked) {
-              colorMode.preference = 'dark'
+              colorMode.value = 'dark'
             }
           },
           onSelect(e: Event) {

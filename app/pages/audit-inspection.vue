@@ -1,8 +1,4 @@
-<script setup lang="ts">
-definePageMeta({
-  middleware: ['authenticated']
-})
-</script>
+<script setup lang="ts"></script>
 
 <template>
   <UDashboardPanel>

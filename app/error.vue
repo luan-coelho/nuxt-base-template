@@ -20,10 +20,19 @@ useHead({
 <template>
   <UApp>
     <UError
+      v-if="error.statusCode === 404"
       :error="{
         statusCode: 404,
-        statusMessage: 'Página não encontrada',
-        message: 'A página que você está procurando não existe.'
+        statusMessage: 'Página Não Encontrada',
+        message: error.message || 'Desculpe, mas esta página não pôde ser encontrada.'
+      }" />
+
+    <UError
+      v-else
+      :error="{
+        statusCode: 500,
+        statusMessage: 'Erro Interno do Servidor',
+        message: error.message || 'Ocorreu um erro inesperado.'
       }" />
   </UApp>
 </template>

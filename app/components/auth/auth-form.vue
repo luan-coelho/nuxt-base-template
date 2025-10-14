@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui'
-import { reactive, ref, watch } from 'vue'
+import { authClient } from '~/lib/auth-client'
+import { reactive, ref } from 'vue'
 import * as z from 'zod'
 
 const schema = z.object({
@@ -9,39 +10,61 @@ const schema = z.object({
   remember: z.boolean().optional()
 })
 
-type Schema = z.infer<typeof schema>
+type SignInSchema = z.infer<typeof schema>
 
-const { login, loading, errorMessage } = useAuth()
 const route = useRoute()
 const router = useRouter()
 const formError = ref<string | null>(null)
 const showPassword = ref(false)
-const state = reactive<Schema>({
+const loading = ref(false)
+
+const state = reactive<SignInSchema>({
   email: '',
   password: '',
   remember: false
-})
-
-watch(errorMessage, value => {
-  formError.value = value
 })
 
 function togglePasswordVisibility() {
   showPassword.value = !showPassword.value
 }
 
-async function onSubmit({ data }: FormSubmitEvent<Schema>) {
+async function onSubmit({ data }: FormSubmitEvent<SignInSchema>) {
   formError.value = null
 
-  const { ok, message } = await login(data)
+  await authClient.signIn.email(
+    {
+      email: data.email,
+      password: data.password,
+      rememberMe: data.remember
+    },
+    {
+      onRequest: () => {
+        loading.value = true
+        formError.value = null
+      },
+      onSuccess: async () => {
+        loading.value = false
+        const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
+        await router.push(redirect)
+      },
+      onError: ctx => {
+        loading.value = false
 
-  if (!ok) {
-    formError.value = message ?? 'Credenciais inválidas. Verifique os dados e tente novamente.'
-    return
-  }
+        if (ctx.error.status === 401) {
+          formError.value = 'Credenciais inválidas. Verifique os dados e tente novamente.'
+          return
+        }
 
-  const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
-  await router.push(redirect)
+        // Tratamento específico para email não verificado
+        if (ctx.error.status === 403) {
+          formError.value = 'Por favor, verifique seu endereço de email'
+          return
+        }
+
+        formError.value = ctx.error.message || 'Credenciais inválidas. Verifique os dados e tente novamente.'
+      }
+    }
+  )
 }
 </script>
 
