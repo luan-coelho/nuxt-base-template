@@ -1,10 +1,10 @@
-import { boolean, pgEnum, pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
+import { boolean, pgEnum, pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core'
 import { z } from 'zod'
 
 export const rolesEnum = pgEnum('roles', ['admin', 'user', 'manager'])
 
 export const users = pgTable('users', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: text('id').primaryKey(),
   name: varchar('name', { length: 100 }).notNull(),
   email: varchar('email', { length: 255 }).notNull().unique(),
   cpf: varchar('cpf', { length: 14 }).notNull().unique(),
@@ -29,11 +29,11 @@ export const insertUserSchema = z.object({
 })
 
 export const updateUserSchema = insertUserSchema.partial().extend({
-  id: z.uuid()
+  id: z.string()
 })
 
 export const selectUserSchema = z.object({
-  id: z.uuid(),
+  id: z.string(),
   name: z.string(),
   email: z.email(),
   cpf: z.string(),

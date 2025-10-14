@@ -8,6 +8,20 @@ export const auth = betterAuth({
     usePlural: true,
     schema: schema
   }),
+  user: {
+    additionalFields: {
+      cpf: {
+        type: 'string',
+        input: true,
+        required: true
+      },
+      roles: {
+        type: 'string[]',
+        input: true,
+        required: true
+      }
+    }
+  },
   emailAndPassword: {
     enabled: true
   },

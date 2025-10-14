@@ -1,7 +1,7 @@
-import { pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core'
 
-export const verification = pgTable('verification', {
-  id: uuid('id').primaryKey().defaultRandom(),
+export const verifications = pgTable('verifications', {
+  id: text('id').primaryKey(),
   identifier: varchar('identifier', { length: 255 }).notNull(),
   value: varchar('value', { length: 255 }).notNull(),
   token: text('token').notNull().unique(),

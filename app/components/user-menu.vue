@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
+import { authClient } from '~/lib/auth-client'
+
+const session = authClient.useSession()
 
 defineProps<{
   collapsed?: boolean
@@ -8,7 +11,6 @@ defineProps<{
 const colorMode = useColorMode()
 const appConfig = useAppConfig()
 const router = useRouter()
-const { session, logout } = useAuth()
 const loggingOut = ref(false)
 
 const colors = [
@@ -33,15 +35,13 @@ const colors = [
 const neutrals = ['slate', 'gray', 'zinc', 'neutral', 'stone']
 
 const user = computed(() => {
-  const current = session.value.data?.user
-
-  if (current) {
+  if (session?.value.data?.user) {
     return {
-      name: current.name,
-      email: current.email,
+      name: session?.value.data.user.name,
+      email: session?.value.data.user.email,
       avatar: {
-        src: `https://ui-avatars.com/api/?name=${encodeURIComponent(current.name)}&background=random`,
-        alt: current.name
+        src: `https://ui-avatars.com/api/?name=${encodeURIComponent(session?.value.data.user.name)}&background=random`,
+        alt: session?.value.data.user.name
       }
     }
   }
@@ -62,8 +62,13 @@ async function handleLogout(event?: Event) {
 
   loggingOut.value = true
   try {
-    await logout()
-    await router.replace('/auth/signin')
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          router.push('/auth/signin') // redirect to signin page
+        }
+      }
+    })
   } finally {
     loggingOut.value = false
   }

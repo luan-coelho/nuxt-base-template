@@ -9,7 +9,8 @@
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "typecheck": "nuxt typecheck",
-    "fix": "prettier --write . && eslint --fix ."
+    "fix": "prettier --write . && eslint --fix .",
+    "create-admin": "tsx scripts/create-admin.ts"
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.69",

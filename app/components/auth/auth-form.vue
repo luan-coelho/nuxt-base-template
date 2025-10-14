@@ -13,7 +13,6 @@ const schema = z.object({
 type SignInSchema = z.infer<typeof schema>
 
 const route = useRoute()
-const router = useRouter()
 const formError = ref<string | null>(null)
 const showPassword = ref(false)
 const loading = ref(false)
@@ -35,7 +34,8 @@ async function onSubmit({ data }: FormSubmitEvent<SignInSchema>) {
     {
       email: data.email,
       password: data.password,
-      rememberMe: data.remember
+      rememberMe: data.remember,
+      callbackURL: typeof route.query.redirect === 'string' ? route.query.redirect : '/' // Redireciona para a URL original ou para a raiz
     },
     {
       onRequest: () => {
@@ -44,8 +44,6 @@ async function onSubmit({ data }: FormSubmitEvent<SignInSchema>) {
       },
       onSuccess: async () => {
         loading.value = false
-        const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
-        await router.push(redirect)
       },
       onError: ctx => {
         loading.value = false

@@ -7,10 +7,10 @@ defineProps<{
 
 const teams = ref([
   {
-    label: 'Nuxt',
+    label: 'SST AuditorIA',
     avatar: {
       src: 'https://github.com/nuxt.png',
-      alt: 'Nuxt'
+      alt: 'SST AuditorIA'
     }
   },
   {
