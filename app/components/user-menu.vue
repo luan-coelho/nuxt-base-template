@@ -9,30 +9,7 @@ defineProps<{
 }>()
 
 const colorMode = useColorMode()
-const appConfig = useAppConfig()
 const router = useRouter()
-const loggingOut = ref(false)
-
-const colors = [
-  'red',
-  'orange',
-  'amber',
-  'yellow',
-  'lime',
-  'green',
-  'emerald',
-  'teal',
-  'cyan',
-  'sky',
-  'blue',
-  'indigo',
-  'violet',
-  'purple',
-  'fuchsia',
-  'pink',
-  'rose'
-]
-const neutrals = ['slate', 'gray', 'zinc', 'neutral', 'stone']
 
 const user = computed(() => {
   if (session?.value.data?.user) {
@@ -56,22 +33,14 @@ const user = computed(() => {
   }
 })
 
-async function handleLogout(event?: Event) {
-  event?.preventDefault()
-  if (loggingOut.value) return
-
-  loggingOut.value = true
-  try {
-    await authClient.signOut({
-      fetchOptions: {
-        onSuccess: () => {
-          router.push('/auth/signin') // redirect to signin page
-        }
+async function handleLogout() {
+  await authClient.signOut({
+    fetchOptions: {
+      onSuccess: () => {
+        router.push('/auth/signin') // redirect to signin page
       }
-    })
-  } finally {
-    loggingOut.value = false
-  }
+    }
+  })
 }
 
 const items = computed<DropdownMenuItem[][]>(() => [
@@ -85,74 +54,15 @@ const items = computed<DropdownMenuItem[][]>(() => [
   ],
   [
     {
-      label: 'Profile',
+      label: 'Perfil',
       icon: 'i-lucide-user'
     },
     {
-      label: 'Billing',
-      icon: 'i-lucide-credit-card'
-    },
-    {
-      label: 'Settings',
-      icon: 'i-lucide-settings',
-      to: '/settings'
-    }
-  ],
-  [
-    {
-      label: 'Theme',
-      icon: 'i-lucide-palette',
-      children: [
-        {
-          label: 'Primary',
-          slot: 'chip',
-          chip: appConfig.ui.colors.primary,
-          content: {
-            align: 'center',
-            collisionPadding: 16
-          },
-          children: colors.map(color => ({
-            label: color,
-            chip: color,
-            slot: 'chip',
-            checked: appConfig.ui.colors.primary === color,
-            type: 'checkbox',
-            onSelect: e => {
-              e.preventDefault()
-
-              appConfig.ui.colors.primary = color
-            }
-          }))
-        },
-        {
-          label: 'Neutral',
-          slot: 'chip',
-          chip: appConfig.ui.colors.neutral === 'neutral' ? 'old-neutral' : appConfig.ui.colors.neutral,
-          content: {
-            align: 'end',
-            collisionPadding: 16
-          },
-          children: neutrals.map(color => ({
-            label: color,
-            chip: color === 'neutral' ? 'old-neutral' : color,
-            slot: 'chip',
-            type: 'checkbox',
-            checked: appConfig.ui.colors.neutral === color,
-            onSelect: e => {
-              e.preventDefault()
-
-              appConfig.ui.colors.neutral = color
-            }
-          }))
-        }
-      ]
-    },
-    {
-      label: 'Appearance',
+      label: 'Tema',
       icon: 'i-lucide-sun-moon',
       children: [
         {
-          label: 'Light',
+          label: 'Claro',
           icon: 'i-lucide-sun',
           type: 'checkbox',
           checked: colorMode.value === 'light',
@@ -163,7 +73,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
           }
         },
         {
-          label: 'Dark',
+          label: 'Escuro',
           icon: 'i-lucide-moon',
           type: 'checkbox',
           checked: colorMode.value === 'dark',
@@ -181,65 +91,9 @@ const items = computed<DropdownMenuItem[][]>(() => [
   ],
   [
     {
-      label: 'Templates',
-      icon: 'i-lucide-layout-template',
-      children: [
-        {
-          label: 'Starter',
-          to: 'https://starter-template.nuxt.dev/'
-        },
-        {
-          label: 'Landing',
-          to: 'https://landing-template.nuxt.dev/'
-        },
-        {
-          label: 'Docs',
-          to: 'https://docs-template.nuxt.dev/'
-        },
-        {
-          label: 'SaaS',
-          to: 'https://saas-template.nuxt.dev/'
-        },
-        {
-          label: 'Dashboard',
-          to: 'https://dashboard-template.nuxt.dev/',
-          color: 'primary',
-          checked: true,
-          type: 'checkbox'
-        },
-        {
-          label: 'Chat',
-          to: 'https://chat-template.nuxt.dev/'
-        },
-        {
-          label: 'Portfolio',
-          to: 'https://portfolio-template.nuxt.dev/'
-        },
-        {
-          label: 'Changelog',
-          to: 'https://changelog-template.nuxt.dev/'
-        }
-      ]
-    }
-  ],
-  [
-    {
-      label: 'Documentation',
-      icon: 'i-lucide-book-open',
-      to: 'https://ui.nuxt.com/docs/getting-started/installation/nuxt',
-      target: '_blank'
-    },
-    {
-      label: 'GitHub repository',
-      icon: 'i-simple-icons-github',
-      to: 'https://github.com/nuxt-ui-templates/dashboard',
-      target: '_blank'
-    },
-    {
       label: 'Log out',
       icon: 'i-lucide-log-out',
       color: 'error',
-      disabled: loggingOut.value,
       onSelect: handleLogout
     }
   ]

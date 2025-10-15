@@ -1,7 +1,11 @@
 import { boolean, pgEnum, pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core'
 import { z } from 'zod'
 
-export const rolesEnum = pgEnum('roles', ['admin', 'user', 'manager'])
+export const ROLES = ['admin', 'user', 'manager'] as const
+
+export type Role = (typeof ROLES)[number]
+
+export const rolesEnum = pgEnum('roles', ROLES)
 
 export const users = pgTable('users', {
   id: text('id').primaryKey(),
@@ -24,8 +28,9 @@ export const insertUserSchema = z.object({
   phone: z
     .string()
     .min(10, 'Telefone deve ter pelo menos 10 caracteres')
-    .max(15, 'Telefone deve ter no máximo 15 caracteres'),
-  roles: z.array(z.string()).optional()
+    .max(15, 'Telefone deve ter no máximo 15 caracteres')
+    .optional(),
+  roles: z.array(z.enum(ROLES)).min(1, 'Selecione pelo menos uma função')
 })
 
 export const updateUserSchema = insertUserSchema.partial().extend({

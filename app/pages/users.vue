@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
-import type { User } from '~/types'
+import type { User } from '~~/server/db/schemas'
 import { upperFirst } from 'scule'
 
 const UButton = resolveComponent('UButton')
@@ -126,7 +126,7 @@ const columns: TableColumn<User>[] = [
       h(
         'div',
         { class: 'flex flex-wrap gap-1.5' },
-        row.original.roles?.map(role => h(UBadge, { variant: 'subtle', class: 'capitalize' }, () => role))
+        row.original.roles?.map((role: string) => h(UBadge, { variant: 'subtle', class: 'capitalize' }, () => role))
       )
   },
   {
