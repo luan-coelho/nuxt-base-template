@@ -3,6 +3,10 @@ import type { FormSubmitEvent } from '@nuxt/ui'
 import { insertUserSchema, type UserFormValues } from '~~/server/db/schemas'
 import { applyCPFMask, applyPhoneMask } from '../../utils/masks'
 
+const emit = defineEmits<{
+  userCreated: []
+}>()
+
 const open = ref(false)
 const loading = ref(false)
 
@@ -17,7 +21,7 @@ const state = reactive<UserFormValues>({
   email: '',
   cpf: '',
   phone: '',
-  roles: ['user']
+  roles: []
 })
 
 // Watcher para aplicar a máscara automaticamente
@@ -73,6 +77,9 @@ async function onSubmit(event: FormSubmitEvent<UserFormValues>) {
       color: 'success'
     })
 
+    // Emite evento para atualizar a listagem
+    emit('userCreated')
+
     // Limpa o formulário e fecha o modal
     Object.assign(state, {
       name: '',
@@ -96,7 +103,11 @@ async function onSubmit(event: FormSubmitEvent<UserFormValues>) {
 </script>
 
 <template>
-  <UModal v-model:open="open" title="Cadastrar usuário" :dismissible="false">
+  <UModal
+    v-model:open="open"
+    title="Cadastrar usuário"
+    :dismissible="false"
+    :ui="{ content: 'sm:max-w-2xl md:max-w-3xl lg:max-w-4xl' }">
     <UButton label="Cadastrar usuário" icon="i-lucide-plus" />
 
     <template #body>
@@ -121,10 +132,12 @@ async function onSubmit(event: FormSubmitEvent<UserFormValues>) {
           <USelectMenu
             v-model="state.roles"
             class="w-full"
-            :options="roleOptions"
+            :items="roleOptions"
+            value-key="value"
             multiple
             placeholder="Selecione as funções"
-            size="lg" />
+            size="lg"
+            :search-input="false" />
         </UFormField>
         <div class="flex justify-end gap-2">
           <UButton label="Cancelar" color="neutral" variant="subtle" :disabled="loading" @click="open = false" />

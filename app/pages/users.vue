@@ -8,74 +8,30 @@ const UBadge = resolveComponent('UBadge')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
 
 const table = useTemplateRef('table')
-
-const columnFilters = ref([
-  {
-    id: 'email',
-    value: ''
-  }
-])
 const columnVisibility = ref()
-interface UsersPage {
-  content: User[]
-  page: number
-  size: number
-  totalElements: number
-  totalPages: number
-  first: boolean
-  last: boolean
-  numberOfElements: number
-  empty: boolean
-}
 
-interface UsersApiResponse {
-  success: boolean
-  data: UsersPage
-}
-
-// Removido: seleção de linhas da tabela
-const page = ref(1)
-const size = ref(20)
-
-const defaultUsersPage: UsersPage = {
-  content: [],
-  page: 0,
-  size: 20,
-  totalElements: 0,
-  totalPages: 0,
-  first: true,
-  last: true,
-  numberOfElements: 0,
-  empty: true
-}
-
-const { data, status, refresh } = await useFetch<UsersApiResponse>('http://localhost:8080/api/users', {
-  lazy: false,
-  credentials: 'include'
+// Usando o composable de paginação reutilizável
+const {
+  data: users,
+  pagination,
+  page,
+  searchInput,
+  sortBy,
+  sortOrder,
+  status,
+  refresh,
+  toggleSort
+} = await usePaginatedFetch<User>('/api/users', {
+  initialLimit: 10,
+  initialSortBy: 'createdAt',
+  initialSortOrder: 'desc',
+  debounceSearch: 500
 })
-
-const meta = computed<UsersPage>(() => data.value?.data ?? defaultUsersPage)
-const users = computed<User[]>(() => meta.value.content)
 
 function handleUserCreated() {
   // Atualiza a lista de usuários
   refresh()
 }
-
-watch(data, newVal => {
-  if (newVal?.data?.size) {
-    size.value = newVal.data.size
-  }
-})
-
-watchEffect(() => {
-  const resolvedPage = meta.value.page + 1
-  if (resolvedPage !== page.value) {
-    page.value = resolvedPage
-  }
-})
-
-// Removido: reset de seleção ao atualizar usuários
 
 function getRowItems() {
   return [
@@ -97,25 +53,42 @@ const columns: TableColumn<User>[] = [
   // Removido: coluna de seleção
   {
     accessorKey: 'name',
-    header: 'Nome',
+    header: () => {
+      const isSortedByName = sortBy.value === 'name'
+      const currentOrder = sortOrder.value
+
+      return h(UButton, {
+        color: 'neutral',
+        variant: 'ghost',
+        label: 'Nome',
+        icon: isSortedByName
+          ? currentOrder === 'asc'
+            ? 'i-lucide-arrow-up-narrow-wide'
+            : 'i-lucide-arrow-down-wide-narrow'
+          : 'i-lucide-arrow-up-down',
+        class: '-mx-2.5',
+        onClick: () => toggleSort('name')
+      })
+    },
     cell: ({ row }) => h('span', { class: 'font-medium text-highlighted' }, row.original.name)
   },
   {
     accessorKey: 'email',
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted()
+    header: () => {
+      const isSortedByEmail = sortBy.value === 'email'
+      const currentOrder = sortOrder.value
 
       return h(UButton, {
         color: 'neutral',
         variant: 'ghost',
         label: 'Email',
-        icon: isSorted
-          ? isSorted === 'asc'
+        icon: isSortedByEmail
+          ? currentOrder === 'asc'
             ? 'i-lucide-arrow-up-narrow-wide'
             : 'i-lucide-arrow-down-wide-narrow'
           : 'i-lucide-arrow-up-down',
         class: '-mx-2.5',
-        onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
+        onClick: () => toggleSort('email')
       })
     }
   },
@@ -173,12 +146,7 @@ const columns: TableColumn<User>[] = [
 
     <template #body>
       <div class="flex flex-wrap items-center justify-between gap-1.5">
-        <UInput
-          :model-value="table?.tableApi?.getColumn('email')?.getFilterValue() as string"
-          class="max-w-sm"
-          icon="i-lucide-search"
-          placeholder="Filtrar emails..."
-          @update:model-value="table?.tableApi?.getColumn('email')?.setFilterValue($event)" />
+        <UInput v-model="searchInput" class="max-w-sm" icon="i-lucide-search" placeholder="Filtrar emails..." />
 
         <div class="flex flex-wrap items-center gap-1.5">
           <!-- Removido: modal de exclusão baseada em seleção -->
@@ -207,7 +175,6 @@ const columns: TableColumn<User>[] = [
 
       <UTable
         ref="table"
-        v-model:column-filters="columnFilters"
         v-model:column-visibility="columnVisibility"
         class="shrink-0"
         :data="users"
@@ -222,14 +189,14 @@ const columns: TableColumn<User>[] = [
         }" />
 
       <div class="border-default mt-auto flex items-center justify-between gap-3 border-t pt-4">
-        <!-- Removido: texto de seleção de linhas -->
+        <div class="text-muted text-sm">Mostrando {{ users.length }} de {{ pagination.total }} usuários</div>
 
         <div class="flex items-center gap-1.5">
           <UPagination
-            v-if="meta.totalPages > 1"
+            v-if="pagination.totalPages > 1"
             v-model:page="page"
-            :items-per-page="meta.size"
-            :total="meta.totalElements" />
+            :items-per-page="pagination.limit"
+            :total="pagination.total" />
         </div>
       </div>
     </template>

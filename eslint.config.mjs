@@ -9,7 +9,8 @@ export default withNuxt(
       'vue/no-multiple-template-root': 'off',
       'vue/html-closing-bracket-newline': 'off',
       'vue/singleline-html-element-content-newline': 'off',
-      '@stylistic/arrow-parens': 'off'
+      '@stylistic/arrow-parens': 'off',
+      '@stylistic/member-delimiter-style': 'off'
     }
   }
 )

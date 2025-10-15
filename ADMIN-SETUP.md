@@ -6,9 +6,9 @@
 tsx scripts/create-admin.ts \
   --name "Admin Principal" \
   --email "admin@gmail.com" \
-  --cpf "12345678900" \
+  --cpf "941.800.330-97" \
   --password "admin123" \
-  --phone "11987654321"
+  --phone "68981614575"
 ```
 
 ## Usando npm script
