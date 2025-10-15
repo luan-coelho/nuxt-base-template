@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import type { User } from '~~/server/db/schemas'
-import { upperFirst } from 'scule'
 
 const UButton = resolveComponent('UButton')
 const UBadge = resolveComponent('UBadge')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
 
-const table = useTemplateRef('table')
 const columnVisibility = ref()
 
 // Usando o composable de paginação reutilizável
@@ -137,10 +135,6 @@ const columns: TableColumn<User>[] = [
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
-
-        <template #right>
-          <UsersAddModal @user-created="handleUserCreated" />
-        </template>
       </UDashboardNavbar>
     </template>
 
@@ -148,29 +142,7 @@ const columns: TableColumn<User>[] = [
       <div class="flex flex-wrap items-center justify-between gap-1.5">
         <UInput v-model="searchInput" class="max-w-sm" icon="i-lucide-search" placeholder="Filtrar emails..." />
 
-        <div class="flex flex-wrap items-center gap-1.5">
-          <!-- Removido: modal de exclusão baseada em seleção -->
-          <UDropdownMenu
-            :items="
-              table?.tableApi
-                ?.getAllColumns()
-                .filter((column: any) => column.getCanHide())
-                .map((column: any) => ({
-                  label: upperFirst(column.id),
-                  type: 'checkbox' as const,
-                  checked: column.getIsVisible(),
-                  onUpdateChecked(checked: boolean) {
-                    table?.tableApi?.getColumn(column.id)?.toggleVisibility(!!checked)
-                  },
-                  onSelect(e?: Event) {
-                    e?.preventDefault()
-                  }
-                }))
-            "
-            :content="{ align: 'end' }">
-            <UButton label="Display" color="neutral" variant="outline" trailing-icon="i-lucide-settings-2" />
-          </UDropdownMenu>
-        </div>
+        <UsersAddModal @user-created="handleUserCreated" />
       </div>
 
       <UTable

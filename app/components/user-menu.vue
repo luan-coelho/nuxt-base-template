@@ -9,7 +9,6 @@ defineProps<{
 }>()
 
 const colorMode = useColorMode()
-const router = useRouter()
 
 const user = computed(() => {
   if (session?.value.data?.user) {
@@ -36,8 +35,8 @@ const user = computed(() => {
 async function handleLogout() {
   await authClient.signOut({
     fetchOptions: {
-      onSuccess: () => {
-        router.push('/auth/signin') // redirect to signin page
+      onSuccess: async () => {
+        await navigateTo('/auth/signin?fromLogout=true', { replace: true })
       }
     }
   })
@@ -91,7 +90,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
   ],
   [
     {
-      label: 'Log out',
+      label: 'Encerrar sessão',
       icon: 'i-lucide-log-out',
       color: 'error',
       onSelect: handleLogout
