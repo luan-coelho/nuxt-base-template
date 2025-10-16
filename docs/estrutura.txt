@@ -1,9 +1,0 @@
-UNIDADE (EMPRESA)
-  -> SETOR
-    -> HIERARQUIA
-      -> CARGO
-        -> FUNCIONÁRIO
-
-Link de relacionamento entre setor e unidade é hierarquia.json
-
-CADASTRO DE FUNCIONÁRIO
