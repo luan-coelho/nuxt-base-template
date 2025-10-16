@@ -13,32 +13,20 @@ const {
   data: users,
   pagination,
   page,
-  searchInput,
   sortBy,
   sortOrder,
-  status,
+  isLoading,
   refresh,
   toggleSort
 } = await usePaginatedFetch<User>('/api/users', {
   initialLimit: 10,
   initialSortBy: 'createdAt',
-  initialSortOrder: 'desc',
-  debounceSearch: 500
+  initialSortOrder: 'desc'
 })
 
 // Estado para controlar o modal de edição
 const editModalOpen = ref(false)
 const selectedUser = ref<User | null>(null)
-
-function handleUserCreated() {
-  // Atualiza a lista de usuários
-  refresh()
-}
-
-function handleUserUpdated() {
-  // Atualiza a lista de usuários
-  refresh()
-}
 
 function openEditModal(user: User) {
   selectedUser.value = user
@@ -159,13 +147,11 @@ const columns: TableColumn<User>[] = [
     </template>
 
     <template #body>
-      <div class="flex flex-wrap items-center justify-between gap-1.5">
-        <UInput v-model="searchInput" class="max-w-sm" icon="i-lucide-search" placeholder="Filtrar emails..." />
-
-        <UsersAddModal @user-created="handleUserCreated" />
+      <div class="flex items-center justify-end">
+        <UsersAddModal @user-created="refresh" />
       </div>
 
-      <UsersEditModal v-model:open="editModalOpen" :user="selectedUser" @user-updated="handleUserUpdated" />
+      <UsersEditModal v-model:open="editModalOpen" :user="selectedUser" @user-updated="refresh" />
 
       <UTable
         ref="table"
@@ -173,7 +159,7 @@ const columns: TableColumn<User>[] = [
         class="shrink-0"
         :data="users"
         :columns="columns"
-        :loading="status === 'pending'"
+        :loading="isLoading"
         :ui="{
           base: 'table-fixed border-separate border-spacing-0',
           thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',

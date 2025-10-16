@@ -7,11 +7,9 @@ import type { UseFetchOptions } from 'nuxt/app'
 export interface UsePaginatedFetchOptions<T> extends Omit<UseFetchOptions<PaginatedResponse<T>>, 'query' | 'watch'> {
   initialPage?: number
   initialLimit?: number
-  initialSearch?: string
   initialSortBy?: string
   initialSortOrder?: 'asc' | 'desc'
   additionalParams?: Record<string, unknown>
-  debounceSearch?: number
 }
 
 /**
@@ -29,15 +27,13 @@ export interface UsePaginatedFetchOptions<T> extends Omit<UseFetchOptions<Pagina
  *   pagination,
  *   page,
  *   limit,
- *   search,
  *   sortBy,
  *   sortOrder,
- *   status,
+ *   isLoading,
  *   refresh
  * } = await usePaginatedFetch<User>('/api/users', {
  *   initialLimit: 20,
  *   initialSortBy: 'createdAt',
- *   debounceSearch: 500
  * })
  * ```
  */
@@ -45,34 +41,20 @@ export function usePaginatedFetch<T>(url: string | (() => string), options: UseP
   const {
     initialPage = 1,
     initialLimit = 10,
-    initialSearch = '',
     initialSortBy = 'createdAt',
     initialSortOrder = 'desc',
     additionalParams = {},
-    debounceSearch = 500,
     ...fetchOptions
   } = options
 
   // Estados reativos para parâmetros de paginação
   const page = ref(initialPage)
   const limit = ref(initialLimit)
-  const searchInput = ref(initialSearch)
-  const search = ref(initialSearch)
   const sortBy = ref(initialSortBy)
   const sortOrder = ref<'asc' | 'desc'>(initialSortOrder)
 
   // Parâmetros adicionais customizados
   const customParams = ref(additionalParams)
-
-  // Debounce para o campo de busca
-  let searchTimeout: NodeJS.Timeout
-  watch(searchInput, newValue => {
-    clearTimeout(searchTimeout)
-    searchTimeout = setTimeout(() => {
-      search.value = newValue
-      page.value = 1 // Reset para a primeira página ao buscar
-    }, debounceSearch)
-  })
 
   // Reset para a primeira página ao mudar a ordenação
   watch([sortBy, sortOrder], () => {
@@ -83,7 +65,6 @@ export function usePaginatedFetch<T>(url: string | (() => string), options: UseP
   const queryParams = computed(() => ({
     page: page.value,
     limit: limit.value,
-    search: search.value,
     sortBy: sortBy.value,
     sortOrder: sortOrder.value,
     ...customParams.value
@@ -99,7 +80,7 @@ export function usePaginatedFetch<T>(url: string | (() => string), options: UseP
   } = useFetch<PaginatedResponse<T>>(url, {
     ...fetchOptions,
     query: queryParams,
-    watch: [page, limit, search, sortBy, sortOrder, customParams]
+    watch: [page, limit, sortBy, sortOrder, customParams]
   })
 
   // Dados extraídos
@@ -122,8 +103,6 @@ export function usePaginatedFetch<T>(url: string | (() => string), options: UseP
   const resetFilters = () => {
     page.value = initialPage
     limit.value = initialLimit
-    searchInput.value = initialSearch
-    search.value = initialSearch
     sortBy.value = initialSortBy
     sortOrder.value = initialSortOrder
     customParams.value = additionalParams
@@ -157,8 +136,6 @@ export function usePaginatedFetch<T>(url: string | (() => string), options: UseP
     // Parâmetros reativos
     page,
     limit,
-    searchInput,
-    search,
     sortBy,
     sortOrder,
     customParams,
@@ -166,6 +143,7 @@ export function usePaginatedFetch<T>(url: string | (() => string), options: UseP
     // Estado da requisição
     status,
     error,
+    isLoading: computed(() => status.value === 'pending') as Ref<boolean>,
 
     // Funções
     refresh,
