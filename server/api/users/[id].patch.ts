@@ -43,7 +43,7 @@ export default defineEventHandler(async event => {
       // Verifica se o email já está em uso por outro usuário
       const emailInUse = await db.select().from(users).where(eq(users.email, body.email)).limit(1)
 
-      if (emailInUse.length > 0 && emailInUse[0].id !== id) {
+      if (emailInUse.length > 0 && emailInUse[0]?.id !== id) {
         throw createError({
           statusCode: 409,
           statusMessage: 'E-mail já cadastrado',
@@ -59,7 +59,7 @@ export default defineEventHandler(async event => {
       // Verifica se o CPF já está em uso por outro usuário
       const cpfInUse = await db.select().from(users).where(eq(users.cpf, cleanedCPF)).limit(1)
 
-      if (cpfInUse.length > 0 && cpfInUse[0].id !== id) {
+      if (cpfInUse.length > 0 && cpfInUse[0]?.id !== id) {
         throw createError({
           statusCode: 409,
           statusMessage: 'CPF já cadastrado',
@@ -79,16 +79,7 @@ export default defineEventHandler(async event => {
     const [updatedUser] = await db.update(users).set(updateData).where(eq(users.id, id)).returning()
 
     // Retorna o usuário atualizado
-    return {
-      id: updatedUser.id,
-      name: updatedUser.name,
-      email: updatedUser.email,
-      cpf: updatedUser.cpf,
-      phone: updatedUser.phone,
-      roles: updatedUser.roles,
-      active: updatedUser.active,
-      updatedAt: updatedUser.updatedAt
-    }
+    return updatedUser
   } catch (error) {
     // Se for um erro de validação do Zod
     if (error instanceof Error && error.name === 'ZodError') {

@@ -1,4 +1,4 @@
-import { asc, desc, eq, ilike, or } from 'drizzle-orm'
+import { asc, count, desc, eq, ilike, or } from 'drizzle-orm'
 import { db } from '../../db'
 import { users } from '../../db/schemas'
 
@@ -57,18 +57,7 @@ export default defineEventHandler(async event => {
 
     // Busca os usuários com paginação
     const usersList = await db
-      .select({
-        id: users.id,
-        name: users.name,
-        email: users.email,
-        cpf: users.cpf,
-        phone: users.phone,
-        roles: users.roles,
-        active: users.active,
-        emailVerified: users.emailVerified,
-        createdAt: users.createdAt,
-        updatedAt: users.updatedAt
-      })
+      .select()
       .from(users)
       .where(conditions.length > 0 ? conditions[0] : undefined)
       .orderBy(orderFn(orderColumn))
@@ -76,10 +65,12 @@ export default defineEventHandler(async event => {
       .offset(offset)
 
     // Conta o total de usuários (para paginação)
-    const [{ count }] = await db
-      .select({ count: users.id })
+    const countResult = await db
+      .select({ total: count() })
       .from(users)
       .where(conditions.length > 0 ? conditions[0] : undefined)
+
+    const total = countResult[0]?.total ?? 0
 
     // Retorna os dados com metadados de paginação
     return {
@@ -87,8 +78,8 @@ export default defineEventHandler(async event => {
       pagination: {
         page,
         limit,
-        total: Number(count),
-        totalPages: Math.ceil(Number(count) / limit)
+        total,
+        totalPages: Math.ceil(total / limit)
       }
     }
   } catch (error) {

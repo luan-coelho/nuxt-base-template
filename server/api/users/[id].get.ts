@@ -20,22 +20,7 @@ export default defineEventHandler(async event => {
     }
 
     // Busca o usuário
-    const [user] = await db
-      .select({
-        id: users.id,
-        name: users.name,
-        email: users.email,
-        cpf: users.cpf,
-        phone: users.phone,
-        roles: users.roles,
-        active: users.active,
-        emailVerified: users.emailVerified,
-        createdAt: users.createdAt,
-        updatedAt: users.updatedAt
-      })
-      .from(users)
-      .where(eq(users.id, id))
-      .limit(1)
+    const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1)
 
     if (!user) {
       throw createError({

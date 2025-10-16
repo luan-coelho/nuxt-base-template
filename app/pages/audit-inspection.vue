@@ -8,7 +8,7 @@
           <UDashboardSidebarCollapse />
         </template>
 
-        <template #right></template>
+        <template #right />
       </UDashboardNavbar>
     </template>
 

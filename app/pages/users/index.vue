@@ -26,12 +26,26 @@ const {
   debounceSearch: 500
 })
 
+// Estado para controlar o modal de edição
+const editModalOpen = ref(false)
+const selectedUser = ref<User | null>(null)
+
 function handleUserCreated() {
   // Atualiza a lista de usuários
   refresh()
 }
 
-function getRowItems() {
+function handleUserUpdated() {
+  // Atualiza a lista de usuários
+  refresh()
+}
+
+function openEditModal(user: User) {
+  selectedUser.value = user
+  editModalOpen.value = true
+}
+
+function getRowItems(user: User) {
   return [
     {
       type: 'label',
@@ -41,8 +55,14 @@ function getRowItems() {
       type: 'separator'
     },
     {
+      label: 'Editar usuário',
+      icon: 'i-lucide-pencil',
+      onClick: () => openEditModal(user)
+    },
+    {
       label: 'Visualizar detalhes do usuário',
-      icon: 'i-lucide-list'
+      icon: 'i-lucide-list',
+      to: `/users/${user.id}`
     }
   ]
 }
@@ -102,7 +122,7 @@ const columns: TableColumn<User>[] = [
   },
   {
     id: 'actions',
-    cell: () => {
+    cell: ({ row }) => {
       return h(
         'div',
         { class: 'text-right' },
@@ -112,7 +132,7 @@ const columns: TableColumn<User>[] = [
             content: {
               align: 'end'
             },
-            items: getRowItems()
+            items: getRowItems(row.original)
           },
           () =>
             h(UButton, {
@@ -144,6 +164,8 @@ const columns: TableColumn<User>[] = [
 
         <UsersAddModal @user-created="handleUserCreated" />
       </div>
+
+      <UsersEditModal v-model:open="editModalOpen" :user="selectedUser" @user-updated="handleUserUpdated" />
 
       <UTable
         ref="table"

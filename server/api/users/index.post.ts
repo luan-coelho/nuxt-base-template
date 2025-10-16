@@ -58,16 +58,7 @@ export default defineEventHandler(async event => {
       .returning()
 
     // Retorna o usuário criado (sem informações sensíveis)
-    return {
-      id: newUser.id,
-      name: newUser.name,
-      email: newUser.email,
-      cpf: newUser.cpf,
-      phone: newUser.phone,
-      roles: newUser.roles,
-      active: newUser.active,
-      createdAt: newUser.createdAt
-    }
+    return newUser
   } catch (error) {
     // Se for um erro de validação do Zod
     if (error instanceof Error && error.name === 'ZodError') {
