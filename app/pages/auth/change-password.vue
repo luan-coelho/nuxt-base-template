@@ -9,7 +9,6 @@ definePageMeta({
 
 const loading = ref(false)
 const toast = useToast()
-const router = useRouter()
 const showPassword = ref({
   current: false,
   new: false,
@@ -101,10 +100,11 @@ async function onSubmit(event: FormSubmitEvent<ChangePasswordForm>) {
       icon: 'i-lucide-check-circle'
     })
 
-    // Redireciona para a home após alguns segundos
-    setTimeout(() => {
-      router.push('/')
-    }, 1000)
+    // Aguarda um pouco para garantir que o backend processou a atualização
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    // Força uma navegação completa para recarregar a sessão
+    await navigateTo('/', { replace: true, external: true })
   } catch (error: unknown) {
     const err = error as { message?: string }
     toast.add({
