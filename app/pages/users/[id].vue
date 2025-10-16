@@ -8,7 +8,7 @@ const toast = useToast()
 const userId = route.params.id as string
 
 // Buscar dados do usuário
-const { data: user, status, error } = await useFetch<User>(`/api/users/${userId}`)
+const { data: user, status, error, refresh } = await useFetch<User>(`/api/users/${userId}`)
 
 // Se o usuário não foi encontrado, redirecionar para a lista
 if (error.value || !user.value) {
@@ -63,8 +63,6 @@ function handleUserUpdated() {
   // Recarregar dados do usuário
   refresh()
 }
-
-const { refresh } = await useFetch<User>(`/api/users/${userId}`)
 </script>
 
 <template>
