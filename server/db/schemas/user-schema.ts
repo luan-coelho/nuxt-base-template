@@ -16,6 +16,7 @@ export const users = pgTable('users', {
   emailVerified: boolean('email_verified').default(false).notNull(),
   roles: rolesEnum().default('user').array().notNull(),
   active: boolean('active').notNull().default(true),
+  passwordMustChange: boolean('password_must_change').default(false).notNull(),
   createdAt: timestamp('createdAt').defaultNow().notNull(),
   updatedAt: timestamp('updatedAt')
 })

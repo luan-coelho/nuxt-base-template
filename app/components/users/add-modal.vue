@@ -52,6 +52,7 @@ watch(
 )
 
 const toast = useToast()
+const router = useRouter()
 
 async function onSubmit(event: FormSubmitEvent<UserFormValues>) {
   loading.value = true
@@ -66,16 +67,25 @@ async function onSubmit(event: FormSubmitEvent<UserFormValues>) {
       roles: event.data.roles
     }
 
-    await $fetch('/api/users', {
+    const newUser = await $fetch<{ id: string; temporaryPassword?: string }>('/api/users', {
       method: 'POST',
       body: payload
     })
 
-    toast.add({
-      title: 'Sucesso',
-      description: 'Usuário cadastrado com sucesso!',
-      color: 'success'
-    })
+    // Exibe a senha temporária ao usuário
+    if (newUser?.temporaryPassword) {
+      toast.add({
+        title: 'Usuário cadastrado com sucesso!',
+        description: `Senha temporária: ${newUser.temporaryPassword} (Copie esta senha, ela não será exibida novamente)`,
+        color: 'success'
+      })
+    } else {
+      toast.add({
+        title: 'Sucesso',
+        description: 'Usuário cadastrado com sucesso!',
+        color: 'success'
+      })
+    }
 
     // Emite evento para atualizar a listagem
     emit('userCreated')
@@ -89,6 +99,11 @@ async function onSubmit(event: FormSubmitEvent<UserFormValues>) {
       roles: ['user']
     })
     open.value = false
+
+    // Redireciona para a página de detalhes do usuário
+    if (newUser?.id) {
+      await router.push(`/users/${newUser.id}`)
+    }
   } catch (error: unknown) {
     const err = error as { data?: { message?: string; statusMessage?: string } }
     toast.add({

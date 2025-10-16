@@ -63,6 +63,59 @@ function handleUserUpdated() {
   // Recarregar dados do usuário
   refresh()
 }
+
+// Reset de senha
+const resetPasswordModalOpen = ref(false)
+const resettingPassword = ref(false)
+const newTemporaryPassword = ref<string | null>(null)
+
+async function handleResetPassword() {
+  resettingPassword.value = true
+
+  try {
+    const response = await $fetch<{ temporaryPassword: string }>(`/api/users/${userId}/reset-password`, {
+      method: 'POST'
+    })
+
+    newTemporaryPassword.value = response.temporaryPassword
+    resetPasswordModalOpen.value = true
+
+    toast.add({
+      title: 'Sucesso',
+      description: 'Senha resetada com sucesso!',
+      color: 'success'
+    })
+
+    // Recarregar dados do usuário
+    refresh()
+  } catch (error: unknown) {
+    const err = error as { data?: { message?: string; statusMessage?: string } }
+    toast.add({
+      title: 'Erro',
+      description: err?.data?.statusMessage || err?.data?.message || 'Erro ao resetar senha',
+      color: 'error'
+    })
+  } finally {
+    resettingPassword.value = false
+  }
+}
+
+function copyPassword() {
+  if (newTemporaryPassword.value) {
+    navigator.clipboard.writeText(newTemporaryPassword.value)
+    toast.add({
+      title: 'Copiado!',
+      description: 'Senha temporária copiada para a área de transferência',
+      color: 'success'
+    })
+  }
+  closeResetPasswordModal()
+}
+
+function closeResetPasswordModal() {
+  resetPasswordModalOpen.value = false
+  newTemporaryPassword.value = null
+}
 </script>
 
 <template>
@@ -238,10 +291,154 @@ function handleUserUpdated() {
             </div>
           </div>
         </UCard>
+
+        <UCard>
+          <template #header>
+            <div class="flex items-center gap-2">
+              <UIcon name="i-lucide-lock" class="text-primary h-5 w-5" />
+              <h3 class="text-highlighted text-lg font-semibold">Senha Temporária Ativa</h3>
+              <UBadge label="Requer Atenção" color="warning" variant="soft" size="sm" />
+            </div>
+          </template>
+
+          <div class="space-y-4">
+            <p class="text-muted text-sm leading-relaxed">
+              Este usuário ainda não alterou sua senha temporária e será forçado a criar uma nova senha no primeiro
+              login. Por motivos de segurança, é recomendável que o usuário altere a senha o quanto antes.
+            </p>
+
+            <!-- Informações Adicionais -->
+            <div class="bg-warning/10 border-warning/20 rounded-lg border p-4">
+              <div class="flex items-start gap-3">
+                <UIcon name="i-lucide-info" class="text-warning mt-0.5 h-5 w-5 shrink-0" />
+                <div class="text-sm">
+                  <p class="text-highlighted font-medium">O que acontecerá no próximo login?</p>
+                  <ul class="text-muted mt-2 list-inside list-disc space-y-1">
+                    <li>O usuário será redirecionado automaticamente para a página de alteração de senha</li>
+                    <li>Não terá acesso ao sistema até criar uma nova senha</li>
+                    <li>A nova senha deve atender aos requisitos de segurança do sistema</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ações -->
+            <div class="flex flex-wrap justify-end gap-2">
+              <UButton
+                label="Resetar Senha"
+                icon="i-lucide-refresh-cw"
+                color="warning"
+                variant="solid"
+                size="md"
+                :loading="resettingPassword"
+                @click="handleResetPassword" />
+            </div>
+          </div>
+        </UCard>
       </div>
     </template>
   </UDashboardPanel>
 
   <!-- Modal de Edição -->
   <UsersEditModal v-if="user" v-model:open="editModalOpen" :user="user" @user-updated="handleUserUpdated" />
+
+  <!-- Modal de Nova Senha Temporária -->
+  <UModal v-model:open="resetPasswordModalOpen" :dismissible="false">
+    <template #content>
+      <div class="space-y-6 p-6">
+        <!-- Cabeçalho com Ícone -->
+        <div class="text-center">
+          <div
+            class="bg-success/20 ring-success/30 mx-auto flex h-16 w-16 items-center justify-center rounded-full ring-2">
+            <UIcon name="i-lucide-key-round" class="text-success h-8 w-8" />
+          </div>
+          <h3 class="text-highlighted mt-4 text-xl font-semibold">Nova Senha Temporária Gerada</h3>
+          <p class="text-muted mt-2 text-sm">
+            A senha foi resetada com sucesso. Copie e compartilhe com o usuário de forma segura.
+          </p>
+        </div>
+
+        <!-- Card da Senha -->
+        <div class="bg-primary/5 ring-primary/20 space-y-4 rounded-xl p-6 ring-1">
+          <div class="flex items-center justify-between">
+            <label class="text-highlighted flex items-center gap-2 text-sm font-semibold">
+              <UIcon name="i-lucide-lock" class="text-primary h-4 w-4" />
+              Senha Temporária
+            </label>
+            <UBadge label="Copie Agora" color="primary" variant="soft" size="sm" />
+          </div>
+
+          <div class="flex items-center gap-3">
+            <div class="bg-highlighted/5 ring-highlighted/10 flex-1 rounded-lg px-4 py-3 ring-1">
+              <code class="text-highlighted block font-mono text-lg font-bold tracking-wider break-all">
+                {{ newTemporaryPassword }}
+              </code>
+            </div>
+            <UButton
+              icon="i-lucide-copy"
+              color="primary"
+              variant="solid"
+              size="xl"
+              class="shrink-0"
+              @click="copyPassword" />
+          </div>
+        </div>
+
+        <!-- Avisos de Segurança -->
+        <div class="space-y-3">
+          <div class="bg-warning/10 ring-warning/20 flex gap-3 rounded-lg p-4 ring-1">
+            <UIcon name="i-lucide-alert-triangle" class="text-warning mt-0.5 h-5 w-5 shrink-0" />
+            <div class="text-sm">
+              <p class="text-highlighted font-semibold">Avisos Importantes</p>
+              <ul class="text-muted mt-2 space-y-1.5">
+                <li class="flex items-start gap-2">
+                  <UIcon name="i-lucide-circle-dot" class="text-warning mt-0.5 h-3 w-3 shrink-0" />
+                  <span>Esta senha será exibida apenas uma vez e não poderá ser recuperada</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <UIcon name="i-lucide-circle-dot" class="text-warning mt-0.5 h-3 w-3 shrink-0" />
+                  <span>O usuário será forçado a alterar esta senha no próximo login</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <UIcon name="i-lucide-circle-dot" class="text-warning mt-0.5 h-3 w-3 shrink-0" />
+                  <span>Compartilhe a senha de forma segura (evite e-mail ou mensagens não criptografadas)</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="bg-info/10 ring-info/20 flex gap-3 rounded-lg p-4 ring-1">
+            <UIcon name="i-lucide-info" class="text-info mt-0.5 h-5 w-5 shrink-0" />
+            <div class="text-sm">
+              <p class="text-highlighted font-semibold">Boas Práticas</p>
+              <p class="text-muted mt-1">
+                Recomendamos compartilhar esta senha pessoalmente ou através de um canal de comunicação seguro e
+                criptografado.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="flex flex-col gap-2 sm:flex-row sm:justify-end">
+          <UButton
+            label="Fechar"
+            color="neutral"
+            variant="outline"
+            size="lg"
+            class="sm:order-1"
+            @click="closeResetPasswordModal" />
+          <UButton
+            label="Copiar e Fechar"
+            icon="i-lucide-copy"
+            trailing-icon="i-lucide-check"
+            color="primary"
+            variant="solid"
+            size="lg"
+            class="sm:order-2"
+            @click="copyPassword" />
+        </div>
+      </div>
+    </template>
+  </UModal>
 </template>

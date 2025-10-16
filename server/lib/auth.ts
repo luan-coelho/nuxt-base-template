@@ -15,15 +15,35 @@ export const auth = betterAuth({
         input: true,
         required: true
       },
+      phone: {
+        type: 'string',
+        input: true,
+        required: false
+      },
+      active: {
+        type: 'boolean',
+        input: false,
+        required: false,
+        defaultValue: true
+      },
       roles: {
         type: 'string[]',
         input: true,
         required: true
+      },
+      passwordMustChange: {
+        type: 'boolean',
+        input: false,
+        required: false,
+        defaultValue: false
       }
     }
   },
   emailAndPassword: {
-    enabled: true
+    enabled: true,
+    minPasswordLength: 8,
+    maxPasswordLength: 128,
+    autoSignIn: false
   },
   plugins: []
 })

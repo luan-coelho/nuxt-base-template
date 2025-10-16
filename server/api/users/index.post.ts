@@ -1,6 +1,8 @@
 import { eq } from 'drizzle-orm'
 import { db } from '../../db'
 import { insertUserSchema, users } from '../../db/schemas'
+import { auth } from '../../lib/auth'
+import { generateTemporaryPassword } from '../../utils/password'
 
 /**
  * POST /api/users
@@ -39,26 +41,52 @@ export default defineEventHandler(async event => {
       })
     }
 
-    // Gera um ID único para o usuário
-    const userId = crypto.randomUUID()
+    // Gera senha temporária
+    const temporaryPassword = generateTemporaryPassword(12)
 
-    // Insere o novo usuário no banco de dados
-    const [newUser] = await db
-      .insert(users)
-      .values({
-        id: userId,
+    // Cria o usuário usando a API do Better Auth para sign-up
+    // Passa todos os campos obrigatórios
+    const signUpResult = await auth.api.signUpEmail({
+      body: {
         name: body.name,
         email: body.email,
+        password: temporaryPassword,
         cpf: cleanedCPF,
         phone: cleanedPhone,
-        roles: body.roles,
-        active: true,
-        emailVerified: false
-      })
-      .returning()
+        roles: body.roles
+      }
+    })
 
-    // Retorna o usuário criado (sem informações sensíveis)
-    return newUser
+    if (!signUpResult?.user?.id) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Erro ao criar usuário',
+        message: 'Não foi possível criar o usuário'
+      })
+    }
+
+    // Atualiza o usuário com o campo passwordMustChange
+    await db
+      .update(users)
+      .set({
+        passwordMustChange: true,
+        active: true,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, signUpResult.user.id))
+
+    // Busca o usuário atualizado
+    const [newUser] = await db.select().from(users).where(eq(users.id, signUpResult.user.id)).limit(1)
+
+    // TODO: Enviar email com a senha temporária para o usuário
+    // Para desenvolvimento, você pode retornar a senha (NUNCA fazer isso em produção)
+    console.log('Senha temporária gerada:', temporaryPassword)
+
+    // Retorna o usuário criado com a senha temporária (apenas para desenvolvimento)
+    return {
+      ...newUser,
+      temporaryPassword // REMOVER em produção
+    }
   } catch (error) {
     // Se for um erro de validação do Zod
     if (error instanceof Error && error.name === 'ZodError') {
