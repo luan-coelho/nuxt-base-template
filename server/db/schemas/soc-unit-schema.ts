@@ -9,6 +9,7 @@ export const socUnits = pgTable('soc_units', {
   name: varchar('name', { length: 255 }).notNull(), // NOMEUNIDADE
   companyName: varchar('company_name', { length: 255 }).notNull(), // RAZAOSOCIAL
   cnpj: varchar('cnpj', { length: 18 }), // CNPJUNIDADE
+  cpf: varchar('cpf', { length: 14 }), // CPFUNIDADE
   caepf: varchar('caepf', { length: 20 }), // CAEPF
   address: text('address'), // ENDERECO
   cnae: varchar('cnae', { length: 20 }), // CNAE
@@ -28,6 +29,7 @@ export const insertSocUnitSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   companyName: z.string().min(1, 'Razão social é obrigatória'),
   cnpj: z.string().optional(),
+  cpf: z.string().optional(),
   caepf: z.string().optional(),
   address: z.string().optional(),
   cnae: z.string().optional(),
@@ -46,6 +48,7 @@ export const selectSocUnitSchema = z.object({
   name: z.string(),
   companyName: z.string(),
   cnpj: z.string().optional(),
+  cpf: z.string().optional(),
   caepf: z.string().optional(),
   address: z.string().optional(),
   cnae: z.string().optional(),

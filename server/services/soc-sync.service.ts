@@ -117,16 +117,13 @@ export class SocSyncService {
       }
 
       // Check if unit already exists by SOC code and company code
-      const [existingUnit] = await db
-        .select()
-        .from(socUnits)
-        .where(eq(socUnits.socCode, socUnit.CODIGOUNIDADE))
-        .limit(1)
+      const [existingUnit] = await db.select().from(socUnits).where(eq(socUnits.name, socUnit.NOMEUNIDADE)).limit(1)
 
       if (existingUnit) {
         // Update existing unit
         await db.update(socUnits).set(unitData).where(eq(socUnits.id, existingUnit.id))
         this.statistics.units.updated++
+        console.log(`Updated unit ${socUnit.NOMEUNIDADE}`)
       } else {
         // Create new unit
         await db.insert(socUnits).values({
@@ -155,19 +152,26 @@ export class SocSyncService {
 
       // Try to find unit from hierarchy mapping
       const unitName = hierarchyMap.get(socSector.NOMESETOR)
+      const companyName = socSector.NOMEEMPRESA
 
       if (unitName) {
         // Find the unit by name from hierarchy
         const [unit] = await db
           .select()
           .from(socUnits)
-          .where(and(eq(socUnits.name, unitName), eq(socUnits.socCompanyCode, socSector.CODIGOEMPRESA)))
+          .where(
+            and(
+              eq(socUnits.name, unitName),
+              eq(socUnits.socCompanyCode, socSector.CODIGOEMPRESA),
+              eq(socUnits.companyName, companyName) //TODO verificar company name
+            )
+          )
           .limit(1)
 
         if (unit) {
           unitId = unit.id
         } else {
-          console.warn(`Unit "${unitName}" not found for sector "${socSector.NOMESETOR}"`)
+          console.warn(`Unit "${unitName}" not found for sector "${socSector.NOMESETOR} and company "${companyName}"`)
         }
       }
 
@@ -196,17 +200,24 @@ export class SocSyncService {
         updatedAt: new Date()
       }
 
-      // Check if sector already exists
+      // Check if sector already exists (by socCode, name, and active status)
       const [existingSector] = await db
         .select()
         .from(socSectors)
-        .where(eq(socSectors.socCode, socSector.CODIGOSETOR))
+        .where(
+          and(
+            eq(socSectors.socCode, socSector.CODIGOSETOR),
+            eq(socSectors.name, socSector.NOMESETOR),
+            eq(socSectors.active, socSector.SETORATIVO === '1')
+          )
+        )
         .limit(1)
 
       if (existingSector) {
         // Update existing sector
         await db.update(socSectors).set(sectorData).where(eq(socSectors.id, existingSector.id))
         this.statistics.sectors.updated++
+        console.log(`Updated sector ${socSector.CODIGOSETOR}`)
       } else {
         // Create new sector
         await db.insert(socSectors).values({

@@ -46,6 +46,7 @@ CREATE TABLE "soc_units" (
   "name" varchar(255) NOT NULL,
   "company_name" varchar(255) NOT NULL,
   "cnpj" varchar(18),
+  "cpf" varchar(14),
   "caepf" varchar(20),
   "address" text,
   "cnae" varchar(20),

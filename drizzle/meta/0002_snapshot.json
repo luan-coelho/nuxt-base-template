@@ -1,5 +1,5 @@
 {
-  "id": "6968c748-6f2c-4e3b-9666-9ff07b58ed8b",
+  "id": "98a5d43c-9385-4486-a1f6-8c03bf6116f2",
   "prevId": "320506b9-a30e-4349-a826-fc768f088879",
   "version": "7",
   "dialect": "postgresql",
@@ -478,6 +478,12 @@
         "cnpj": {
           "name": "cnpj",
           "type": "varchar(18)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cpf": {
+          "name": "cpf",
+          "type": "varchar(14)",
           "primaryKey": false,
           "notNull": false
         },
