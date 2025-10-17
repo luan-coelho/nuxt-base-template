@@ -21,6 +21,7 @@ export default defineNuxtConfig({
     socApiKeyCompanies: process.env.SOC_API_KEY_COMPANIES,
     socApiKeyUnits: process.env.SOC_API_KEY_UNITS,
     socApiKeySectors: process.env.SOC_API_KEY_SECTORS,
-    socApiKeyJobs: process.env.SOC_API_KEY_JOBS
+    socApiKeyJobs: process.env.SOC_API_KEY_JOBS,
+    socApiKeyHierarchy: process.env.SOC_API_KEY_HIERARCHY
   }
 })

@@ -85,6 +85,20 @@ export interface SocJobResponse {
   CBO: string
 }
 
+// Hierarchy (Hierarquia) from SOC - relates Unit -> Sector -> Job
+export interface SocHierarchyResponse {
+  NOMEUNIDADE: string
+  NOMESETOR: string
+  NOMECARGO: string
+  LOCALSETORCARGO: string
+  DESCRICAOSETORCARGODETALHADA: string
+  FUNCAO: string
+  CBO: string
+  REQUISITOSFUNCAO: string
+  DESCRICAODETALHADAPPRAPCMSO: string
+  USARDESCRICAOREQUISITOSDOCARGO: string
+}
+
 // Sync Statistics
 export interface SyncStatistics {
   companies: {
@@ -121,5 +135,6 @@ export const SOC_ENDPOINT_CODES = {
   COMPANIES: '200267',
   UNITS: '200266',
   SECTORS: '200268',
-  JOBS: '200265'
+  JOBS: '200265',
+  HIERARCHY: '198531'
 } as const

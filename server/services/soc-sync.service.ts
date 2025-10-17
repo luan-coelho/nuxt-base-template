@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { db } from '../db'
 import { socCompanies, socJobs, socSectors, socUnits } from '../db/schemas'
@@ -149,28 +149,49 @@ export class SocSyncService {
   /**
    * Sync a single sector
    */
-  private async syncSector(socSector: SocSectorResponse): Promise<void> {
+  private async syncSector(socSector: SocSectorResponse, hierarchyMap: Map<string, string>): Promise<void> {
     try {
-      // Find all units for this company
-      const companyUnits = await db.select().from(socUnits).where(eq(socUnits.socCompanyCode, socSector.CODIGOEMPRESA))
+      let unitId: string | null = null
 
-      if (companyUnits.length === 0) {
-        throw new Error(`No units found for company ${socSector.CODIGOEMPRESA}`)
+      // Try to find unit from hierarchy mapping
+      const unitName = hierarchyMap.get(socSector.NOMESETOR)
+
+      if (unitName) {
+        // Find the unit by name from hierarchy
+        const [unit] = await db
+          .select()
+          .from(socUnits)
+          .where(and(eq(socUnits.name, unitName), eq(socUnits.socCompanyCode, socSector.CODIGOEMPRESA)))
+          .limit(1)
+
+        if (unit) {
+          unitId = unit.id
+        } else {
+          console.warn(`Unit "${unitName}" not found for sector "${socSector.NOMESETOR}"`)
+        }
       }
 
-      // For now, assign to the first unit. In a real scenario, you might need
-      // additional logic to determine which unit the sector belongs to
-      const unit = companyUnits[0]
+      // Fallback: if no hierarchy mapping found, use the first unit of the company
+      if (!unitId) {
+        const [firstUnit] = await db
+          .select()
+          .from(socUnits)
+          .where(eq(socUnits.socCompanyCode, socSector.CODIGOEMPRESA))
+          .limit(1)
 
-      if (!unit) {
-        throw new Error(`No valid unit found for company ${socSector.CODIGOEMPRESA}`)
+        if (!firstUnit) {
+          throw new Error(`No units found for company ${socSector.CODIGOEMPRESA}`)
+        }
+
+        unitId = firstUnit.id
+        console.warn(`No hierarchy mapping found for sector "${socSector.NOMESETOR}", using first unit as fallback`)
       }
 
       const sectorData = {
         socCode: socSector.CODIGOSETOR,
         socCompanyCode: socSector.CODIGOEMPRESA,
         name: socSector.NOMESETOR,
-        unitId: unit.id,
+        unitId,
         active: socSector.SETORATIVO === '1',
         updatedAt: new Date()
       }
@@ -208,24 +229,64 @@ export class SocSyncService {
   /**
    * Sync a single job
    */
-  private async syncJob(socJob: SocJobResponse): Promise<void> {
+  private async syncJob(
+    socJob: SocJobResponse,
+    hierarchyMap: Map<string, { unitName: string; sectorName: string }>
+  ): Promise<void> {
     try {
-      // Find all sectors for this company
-      const companySectors = await db
-        .select()
-        .from(socSectors)
-        .where(eq(socSectors.socCompanyCode, socJob.CODIGOEMPRESA))
+      let sectorId: string | null = null
 
-      if (companySectors.length === 0) {
-        throw new Error(`No sectors found for company ${socJob.CODIGOEMPRESA}`)
+      // Try to find sector from hierarchy mapping
+      const hierarchyInfo = hierarchyMap.get(socJob.NOMECARGO)
+
+      if (hierarchyInfo) {
+        // Find the sector by name and unit name
+        const [unit] = await db
+          .select()
+          .from(socUnits)
+          .where(and(eq(socUnits.name, hierarchyInfo.unitName), eq(socUnits.socCompanyCode, socJob.CODIGOEMPRESA)))
+          .limit(1)
+
+        if (unit) {
+          // Find sector by name and unit
+          const [sector] = await db
+            .select()
+            .from(socSectors)
+            .where(
+              and(
+                eq(socSectors.name, hierarchyInfo.sectorName),
+                eq(socSectors.unitId, unit.id),
+                eq(socSectors.socCompanyCode, socJob.CODIGOEMPRESA)
+              )
+            )
+            .limit(1)
+
+          if (sector) {
+            sectorId = sector.id
+          } else {
+            console.warn(
+              `Sector "${hierarchyInfo.sectorName}" not found in unit "${hierarchyInfo.unitName}" for job "${socJob.NOMECARGO}"`
+            )
+          }
+        } else {
+          console.warn(`Unit "${hierarchyInfo.unitName}" not found for job "${socJob.NOMECARGO}"`)
+        }
       }
 
-      // For now, assign to the first sector. In a real scenario, you might need
-      // additional logic to determine which sector the job belongs to
-      const sector = companySectors[0]
+      // Fallback: if no hierarchy mapping found, use the first sector of the company
+      if (!sectorId) {
+        const [firstSector] = await db
+          .select()
+          .from(socSectors)
+          .where(eq(socSectors.socCompanyCode, socJob.CODIGOEMPRESA))
+          .limit(1)
 
-      if (!sector) {
-        throw new Error(`No valid sector found for company ${socJob.CODIGOEMPRESA}`)
+        if (!firstSector) {
+          throw new Error(`No sectors found for company ${socJob.CODIGOEMPRESA}`)
+        }
+
+        sectorId = firstSector.id
+        console.warn(`No hierarchy mapping found for job "${socJob.NOMECARGO}", using first sector as fallback`)
       }
 
       const jobData = {
@@ -233,7 +294,7 @@ export class SocSyncService {
         socCompanyCode: socJob.CODIGOEMPRESA,
         name: socJob.NOMECARGO,
         detailedDescription: socJob.DESCRICAODETALHADA || undefined,
-        sectorId: sector.id,
+        sectorId,
         active: socJob.CARGOATIVO === '1',
         updatedAt: new Date()
       }
@@ -298,8 +359,36 @@ export class SocSyncService {
     const socSectors = await this.apiClient.fetchSectors()
     console.log(`Found ${socSectors.length} sectors`)
 
-    for (const socSector of socSectors) {
-      await this.syncSector(socSector)
+    // Group sectors by company code to optimize hierarchy fetches
+    const sectorsByCompany = new Map<string, SocSectorResponse[]>()
+
+    for (const sector of socSectors) {
+      const companyCode = sector.CODIGOEMPRESA
+      if (!sectorsByCompany.has(companyCode)) {
+        sectorsByCompany.set(companyCode, [])
+      }
+      sectorsByCompany.get(companyCode)!.push(sector)
+    }
+
+    // Process sectors grouped by company
+    for (const [companyCode, companySectors] of sectorsByCompany) {
+      console.log(`Processing ${companySectors.length} sectors for company ${companyCode}`)
+
+      // Fetch hierarchy ONCE per company
+      console.log(`Fetching hierarchy for company ${companyCode}...`)
+      const hierarchyData = await this.apiClient.fetchHierarchy(companyCode)
+
+      // Create a map: Sector Name -> Unit Name
+      const hierarchyMap = new Map<string, string>()
+      for (const record of hierarchyData) {
+        hierarchyMap.set(record.NOMESETOR, record.NOMEUNIDADE)
+      }
+      console.log(`Found ${hierarchyMap.size} hierarchy mappings for company ${companyCode}`)
+
+      // Process each sector with the hierarchy map
+      for (const socSector of companySectors) {
+        await this.syncSector(socSector, hierarchyMap)
+      }
     }
   }
 
@@ -311,8 +400,39 @@ export class SocSyncService {
     const socJobs = await this.apiClient.fetchJobs()
     console.log(`Found ${socJobs.length} jobs`)
 
-    for (const socJob of socJobs) {
-      await this.syncJob(socJob)
+    // Group jobs by company code to optimize hierarchy fetches
+    const jobsByCompany = new Map<string, SocJobResponse[]>()
+
+    for (const job of socJobs) {
+      const companyCode = job.CODIGOEMPRESA
+      if (!jobsByCompany.has(companyCode)) {
+        jobsByCompany.set(companyCode, [])
+      }
+      jobsByCompany.get(companyCode)!.push(job)
+    }
+
+    // Process jobs grouped by company
+    for (const [companyCode, companyJobs] of jobsByCompany) {
+      console.log(`Processing ${companyJobs.length} jobs for company ${companyCode}`)
+
+      // Fetch hierarchy ONCE per company
+      console.log(`Fetching hierarchy for jobs in company ${companyCode}...`)
+      const hierarchyData = await this.apiClient.fetchHierarchy(companyCode)
+
+      // Create a map: Job Name -> { Unit Name, Sector Name }
+      const hierarchyMap = new Map<string, { unitName: string; sectorName: string }>()
+      for (const record of hierarchyData) {
+        hierarchyMap.set(record.NOMECARGO, {
+          unitName: record.NOMEUNIDADE,
+          sectorName: record.NOMESETOR
+        })
+      }
+      console.log(`Found ${hierarchyMap.size} job hierarchy mappings for company ${companyCode}`)
+
+      // Process each job with the hierarchy map
+      for (const socJob of companyJobs) {
+        await this.syncJob(socJob, hierarchyMap)
+      }
     }
   }
 

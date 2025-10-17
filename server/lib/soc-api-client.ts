@@ -1,4 +1,11 @@
-import type { SocApiParams, SocCompanyResponse, SocJobResponse, SocSectorResponse, SocUnitResponse } from '../types/soc'
+import type {
+  SocApiParams,
+  SocCompanyResponse,
+  SocHierarchyResponse,
+  SocJobResponse,
+  SocSectorResponse,
+  SocUnitResponse
+} from '../types/soc'
 import { SOC_ENDPOINT_CODES } from '../types/soc'
 
 /**
@@ -13,6 +20,7 @@ export class SocApiClient {
     units: string
     sectors: string
     jobs: string
+    hierarchy: string
   }
 
   constructor(config: {
@@ -23,6 +31,7 @@ export class SocApiClient {
       units: string
       sectors: string
       jobs: string
+      hierarchy: string
     }
   }) {
     this.baseUrl = config.baseUrl
@@ -46,15 +55,20 @@ export class SocApiClient {
     console.log('SOC API Request URL:', url)
 
     try {
-      const response = await $fetch<T[]>(url, {
+      // SOC API retorna JSON com Content-Type text/plain; charset=ISO-8859-1
+      // Precisamos buscar como ArrayBuffer para lidar com o encoding corretamente
+      const response = await $fetch(url, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        responseType: 'arrayBuffer'
       })
 
-      // SOC API may return a single object or an array
-      return Array.isArray(response) ? response : [response]
+      // Decodificar de ISO-8859-1 (Latin-1) para string UTF-8
+      const decoder = new TextDecoder('iso-8859-1')
+      const text = decoder.decode(response as ArrayBuffer)
+
+      // Parse manual do JSON
+      const parsed = JSON.parse(text) as T[]
+      return parsed
     } catch (error) {
       console.error('SOC API Error:', error)
       throw new Error(`Failed to fetch data from SOC API: ${error}`)
@@ -109,6 +123,19 @@ export class SocApiClient {
       tipoSaida: 'json'
     })
   }
+
+  /**
+   * Fetch hierarchy (relationships between Unit -> Sector -> Job) for a specific company
+   * @param companyCode - The company code to fetch hierarchy for
+   */
+  async fetchHierarchy(companyCode: string): Promise<SocHierarchyResponse[]> {
+    return this.fetch<SocHierarchyResponse>({
+      empresa: companyCode,
+      codigo: SOC_ENDPOINT_CODES.HIERARCHY,
+      chave: this.apiKeys.hierarchy,
+      tipoSaida: 'json'
+    })
+  }
 }
 
 /**
@@ -124,7 +151,8 @@ export function createSocApiClient(): SocApiClient {
       companies: config.socApiKeyCompanies,
       units: config.socApiKeyUnits,
       sectors: config.socApiKeySectors,
-      jobs: config.socApiKeyJobs
+      jobs: config.socApiKeyJobs,
+      hierarchy: config.socApiKeyHierarchy
     }
   })
 }
