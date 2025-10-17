@@ -1,9 +1,9 @@
 import { integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 import { z } from 'zod'
-import { jobs } from './cargo-schema'
-import { companies } from './empresa-schema'
-import { sectors } from './setor-schema'
-import { units } from './unidade-schema'
+import { companies } from './company-schema'
+import { jobs } from './job-schema'
+import { sectors } from './sector-schema'
+import { units } from './unit-schema'
 
 /**
  * Hierarchies table represents the organizational structure

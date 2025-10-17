@@ -1,6 +1,6 @@
 import { boolean, pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core'
 import { z } from 'zod'
-import { units } from './unidade-schema'
+import { units } from './unit-schema'
 
 export const sectors = pgTable('sectors', {
   id: text('id').primaryKey(),

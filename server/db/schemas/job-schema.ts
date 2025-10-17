@@ -1,6 +1,6 @@
 import { boolean, pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core'
 import { z } from 'zod'
-import { sectors } from './setor-schema'
+import { sectors } from './sector-schema'
 
 export const jobs = pgTable('jobs', {
   id: text('id').primaryKey(),
