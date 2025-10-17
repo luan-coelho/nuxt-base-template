@@ -15,6 +15,13 @@
       "when": 1760640821040,
       "tag": "0001_quick_hawkeye",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1760724495422,
+      "tag": "0002_cloudy_leo",
+      "breakpoints": true
     }
   ]
 }

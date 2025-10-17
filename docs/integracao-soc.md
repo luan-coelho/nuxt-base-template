@@ -33,7 +33,6 @@ https://ws1.soc.com.br/WebSoc/exportadados?parametro={"empresa":'500493',"codigo
 - Nome - Name;
 - Razão Social - Company Name;
 - CNPJ - CNPJ;
-- CPF - CPF;
 - CAEPF - CAEPF;
 - Endereço - Address;
 - CNAE - CNAE;
@@ -72,7 +71,6 @@ https://ws1.soc.com.br/WebSoc/exportadados?parametro={"empresa":'500493',"codigo
 - Nome - Name;
 - Razão Social - Company Name;
 - CNPJ - CNPJ;
-- CPF - CPF;
 - CAEPF - CAEPF;
 - Endereço - Address;
 - CNAE - CNAE;

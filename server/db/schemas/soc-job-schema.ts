@@ -1,8 +1,8 @@
 import { boolean, pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core'
 import { z } from 'zod'
-import { sectors } from './sector-schema'
+import { socSectors } from './soc-sector-schema'
 
-export const jobs = pgTable('jobs', {
+export const socJobs = pgTable('soc_jobs', {
   id: text('id').primaryKey(),
   socCode: varchar('soc_code', { length: 50 }), // CODIGOCARGO from SOC
   socCompanyCode: varchar('soc_company_code', { length: 50 }), // CODIGOEMPRESA from SOC
@@ -10,14 +10,14 @@ export const jobs = pgTable('jobs', {
   detailedDescription: text('detailed_description'), // DESCRICAODETALHADA
   sectorId: text('sector_id')
     .notNull()
-    .references(() => sectors.id, { onDelete: 'cascade' }),
+    .references(() => socSectors.id, { onDelete: 'cascade' }),
   active: boolean('active').notNull().default(true),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
 })
 
 // Zod schemas for validation
-export const insertJobSchema = z.object({
+export const insertSocJobSchema = z.object({
   socCode: z.string().optional(),
   socCompanyCode: z.string().optional(),
   name: z.string().min(1, 'Nome do cargo é obrigatório'),
@@ -25,11 +25,11 @@ export const insertJobSchema = z.object({
   sectorId: z.string().min(1, 'Setor é obrigatório')
 })
 
-export const updateJobSchema = insertJobSchema.partial().extend({
+export const updateSocJobSchema = insertSocJobSchema.partial().extend({
   id: z.string()
 })
 
-export const selectJobSchema = z.object({
+export const selectSocJobSchema = z.object({
   id: z.string(),
   socCode: z.string().optional(),
   socCompanyCode: z.string().optional(),
@@ -41,6 +41,6 @@ export const selectJobSchema = z.object({
   updatedAt: z.date().optional()
 })
 
-export type Job = z.infer<typeof selectJobSchema>
-export type InsertJob = z.infer<typeof insertJobSchema>
-export type UpdateJob = z.infer<typeof updateJobSchema>
+export type SocJob = z.infer<typeof selectSocJobSchema>
+export type InsertSocJob = z.infer<typeof insertSocJobSchema>
+export type UpdateSocJob = z.infer<typeof updateSocJobSchema>

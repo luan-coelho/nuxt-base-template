@@ -1,13 +1,12 @@
 import { boolean, pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core'
 import { z } from 'zod'
 
-export const companies = pgTable('companies', {
+export const socCompanies = pgTable('soc_companies', {
   id: text('id').primaryKey(),
   socCode: varchar('soc_code', { length: 50 }), // CODIGO from SOC
   name: varchar('name', { length: 255 }).notNull(), // NOMEABREVIADO
   companyName: varchar('company_name', { length: 255 }).notNull(), // RAZAOSOCIAL
   cnpj: varchar('cnpj', { length: 18 }), // CNPJ
-  cpf: varchar('cpf', { length: 14 }), // CPF
   caepf: varchar('caepf', { length: 20 }), // CAEPF
   address: text('address'), // ENDERECO
   cnae: varchar('cnae', { length: 20 }), // CNAE
@@ -18,29 +17,27 @@ export const companies = pgTable('companies', {
 })
 
 // Zod schemas for validation
-export const insertCompanySchema = z.object({
+export const insertSocCompanySchema = z.object({
   socCode: z.string().optional(),
   name: z.string().min(1, 'Nome é obrigatório'),
   companyName: z.string().min(1, 'Razão social é obrigatória'),
   cnpj: z.string().optional(),
-  cpf: z.string().optional(),
   caepf: z.string().optional(),
   address: z.string().optional(),
   cnae: z.string().optional(),
   riskDegree: z.string().optional()
 })
 
-export const updateCompanySchema = insertCompanySchema.partial().extend({
+export const updateSocCompanySchema = insertSocCompanySchema.partial().extend({
   id: z.string()
 })
 
-export const selectCompanySchema = z.object({
+export const selectSocCompanySchema = z.object({
   id: z.string(),
   socCode: z.string().optional(),
   name: z.string(),
   companyName: z.string(),
   cnpj: z.string().optional(),
-  cpf: z.string().optional(),
   caepf: z.string().optional(),
   address: z.string().optional(),
   cnae: z.string().optional(),
@@ -50,6 +47,6 @@ export const selectCompanySchema = z.object({
   updatedAt: z.date().optional()
 })
 
-export type Company = z.infer<typeof selectCompanySchema>
-export type InsertCompany = z.infer<typeof insertCompanySchema>
-export type UpdateCompany = z.infer<typeof updateCompanySchema>
+export type SocCompany = z.infer<typeof selectSocCompanySchema>
+export type InsertSocCompany = z.infer<typeof insertSocCompanySchema>
+export type UpdateSocCompany = z.infer<typeof updateSocCompanySchema>
