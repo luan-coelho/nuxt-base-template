@@ -83,6 +83,7 @@ export class SocApiClient {
       empresa: this.empresa,
       codigo: SOC_ENDPOINT_CODES.COMPANIES,
       chave: this.apiKeys.companies,
+      ativo: '1',
       tipoSaida: 'json'
     })
   }
@@ -90,13 +91,13 @@ export class SocApiClient {
   /**
    * Fetch all units from SOC
    */
-  async fetchUnits(activeOnly?: boolean): Promise<SocUnitResponse[]> {
+  async fetchUnits(): Promise<SocUnitResponse[]> {
     return this.fetch<SocUnitResponse>({
       empresa: this.empresa,
       codigo: SOC_ENDPOINT_CODES.UNITS,
       chave: this.apiKeys.units,
-      tipoSaida: 'json',
-      ativo: activeOnly ? '1' : ''
+      ativo: '1',
+      tipoSaida: 'json'
     })
   }
 
@@ -108,6 +109,7 @@ export class SocApiClient {
       empresa: this.empresa,
       codigo: SOC_ENDPOINT_CODES.SECTORS,
       chave: this.apiKeys.sectors,
+      ativo: '1',
       tipoSaida: 'json'
     })
   }
@@ -120,6 +122,7 @@ export class SocApiClient {
       empresa: this.empresa,
       codigo: SOC_ENDPOINT_CODES.JOBS,
       chave: this.apiKeys.jobs,
+      ativo: '1',
       tipoSaida: 'json'
     })
   }
@@ -133,6 +136,7 @@ export class SocApiClient {
       empresa: companyCode,
       codigo: SOC_ENDPOINT_CODES.HIERARCHY,
       chave: this.apiKeys.hierarchy,
+      ativo: '1',
       tipoSaida: 'json'
     })
   }

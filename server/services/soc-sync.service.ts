@@ -117,7 +117,11 @@ export class SocSyncService {
       }
 
       // Check if unit already exists by SOC code and company code
-      const [existingUnit] = await db.select().from(socUnits).where(eq(socUnits.name, socUnit.NOMEUNIDADE)).limit(1)
+      const [existingUnit] = await db
+        .select()
+        .from(socUnits)
+        .where(and(eq(socUnits.socCode, socUnit.CODIGOUNIDADE), eq(socUnits.socCompanyCode, socUnit.CODIGOEMPRESA)))
+        .limit(1)
 
       if (existingUnit) {
         // Update existing unit
@@ -152,10 +156,9 @@ export class SocSyncService {
 
       // Try to find unit from hierarchy mapping
       const unitName = hierarchyMap.get(socSector.NOMESETOR)
-      const companyName = socSector.NOMEEMPRESA
 
       if (unitName) {
-        // Find the unit by name from hierarchy
+        // Find the unit by name from hierarchy (only active units)
         const [unit] = await db
           .select()
           .from(socUnits)
@@ -163,7 +166,7 @@ export class SocSyncService {
             and(
               eq(socUnits.name, unitName),
               eq(socUnits.socCompanyCode, socSector.CODIGOEMPRESA),
-              eq(socUnits.companyName, companyName) //TODO verificar company name
+              eq(socUnits.active, true)
             )
           )
           .limit(1)
@@ -171,16 +174,16 @@ export class SocSyncService {
         if (unit) {
           unitId = unit.id
         } else {
-          console.warn(`Unit "${unitName}" not found for sector "${socSector.NOMESETOR} and company "${companyName}"`)
+          console.warn(`Unit "${unitName}" not found for sector "${socSector.NOMESETOR}"`)
         }
       }
 
-      // Fallback: if no hierarchy mapping found, use the first unit of the company
+      // Fallback: if no hierarchy mapping found, use the first active unit of the company
       if (!unitId) {
         const [firstUnit] = await db
           .select()
           .from(socUnits)
-          .where(eq(socUnits.socCompanyCode, socSector.CODIGOEMPRESA))
+          .where(and(eq(socUnits.socCompanyCode, socSector.CODIGOEMPRESA), eq(socUnits.active, true)))
           .limit(1)
 
         if (!firstUnit) {
@@ -251,11 +254,17 @@ export class SocSyncService {
       const hierarchyInfo = hierarchyMap.get(socJob.NOMECARGO)
 
       if (hierarchyInfo) {
-        // Find the sector by name and unit name
+        // Find the sector by name and unit name (only active units)
         const [unit] = await db
           .select()
           .from(socUnits)
-          .where(and(eq(socUnits.name, hierarchyInfo.unitName), eq(socUnits.socCompanyCode, socJob.CODIGOEMPRESA)))
+          .where(
+            and(
+              eq(socUnits.name, hierarchyInfo.unitName),
+              eq(socUnits.socCompanyCode, socJob.CODIGOEMPRESA),
+              eq(socUnits.active, true)
+            )
+          )
           .limit(1)
 
         if (unit) {
