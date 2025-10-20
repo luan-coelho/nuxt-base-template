@@ -89,6 +89,12 @@ export class SocSyncService {
    */
   private async syncUnit(socUnit: SocUnitResponse): Promise<void> {
     try {
+      // Only sync active units
+      if (socUnit.UNIDADEATIVA !== '1') {
+        console.log(`Skipping inactive unit ${socUnit.NOMEUNIDADE} (${socUnit.CODIGOUNIDADE})`)
+        return
+      }
+
       // Find the parent company by SOC code
       const [company] = await db
         .select()
