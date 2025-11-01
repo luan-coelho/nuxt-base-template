@@ -8,7 +8,7 @@ const UDropdownMenu = resolveComponent('UDropdownMenu')
 
 const columnVisibility = ref()
 
-// Usando o composable de paginação reutilizável
+// Usando o composable de paginação reutilizável com TanStack Query
 const {
   data: users,
   pagination,
@@ -16,9 +16,9 @@ const {
   sortBy,
   sortOrder,
   isLoading,
-  refresh,
+  refetch,
   toggleSort
-} = await usePaginatedFetch<User>('/api/users', {
+} = usePaginatedFetch<User>('/api/users', {
   initialLimit: 10,
   initialSortBy: 'createdAt',
   initialSortOrder: 'desc'
@@ -148,10 +148,10 @@ const columns: TableColumn<User>[] = [
 
     <template #body>
       <div class="flex items-center justify-end">
-        <UsersAddModal @user-created="refresh" />
+        <UsersAddModal @user-created="refetch" />
       </div>
 
-      <UsersEditModal v-model:open="editModalOpen" :user="selectedUser" @user-updated="refresh" />
+      <UsersEditModal v-model:open="editModalOpen" :user="selectedUser" @user-updated="refetch" />
 
       <UTable
         ref="table"

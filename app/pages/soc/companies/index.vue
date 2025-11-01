@@ -13,7 +13,7 @@ definePageMeta({
 
 const columnVisibility = ref()
 
-// Usando o composable de paginação reutilizável
+// Usando o composable de paginação reutilizável com TanStack Query
 const {
   data: companies,
   pagination,
@@ -21,9 +21,9 @@ const {
   sortBy,
   sortOrder,
   isLoading,
-  refresh,
+  refetch,
   toggleSort
-} = await usePaginatedFetch<SocCompany>('/api/soc/companies', {
+} = usePaginatedFetch<SocCompany>('/soc/companies', {
   initialLimit: 15,
   initialSortBy: 'name',
   initialSortOrder: 'asc'
@@ -147,14 +147,7 @@ const columns: TableColumn<SocCompany>[] = [
           <UDashboardSidebarCollapse />
         </template>
         <template #trailing>
-          <UTooltip text="Sincronizar empresas">
-            <UButton
-              icon="i-lucide-refresh-cw"
-              color="neutral"
-              variant="subtle"
-              @click="refresh"
-              :loading="isLoading" />
-          </UTooltip>
+          <UTooltip text="Sincronizar empresas">label="Sincronizar" variant="outline" @click="refetch" /></UTooltip>
         </template>
       </UDashboardNavbar>
     </template>

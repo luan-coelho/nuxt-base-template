@@ -2,13 +2,13 @@
 import { createUserSchema, type CreateUserSchema } from '@/types/user'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import { applyCPFMask, applyPhoneMask } from '../../utils/masks'
+import { useCreateUserMutation } from '~/composables/useUsers'
 
 const emit = defineEmits<{
   userCreated: []
 }>()
 
 const open = ref(false)
-const loading = ref(false)
 
 const roleOptions = [
   { value: 'admin', label: 'Administrador' },
@@ -54,66 +54,63 @@ watch(
 const toast = useToast()
 const router = useRouter()
 
+// Usa o hook de mutation do TanStack Query
+const { mutate: createUser, isPending } = useCreateUserMutation()
+
 async function onSubmit(event: FormSubmitEvent<CreateUserSchema>) {
-  loading.value = true
-
-  try {
-    // Chama a API para criar o usuário
-    const payload: CreateUserSchema = {
-      name: event.data.name,
-      email: event.data.email,
-      cpf: event.data.cpf,
-      phone: event.data.phone || undefined,
-      roles: event.data.roles
-    }
-
-    const newUser = await $fetch<{ id: string; temporaryPassword?: string }>('/api/users', {
-      method: 'POST',
-      body: payload
-    })
-
-    // Exibe a senha temporária ao usuário
-    if (newUser?.temporaryPassword) {
-      toast.add({
-        title: 'Usuário cadastrado com sucesso!',
-        description: `Senha temporária: ${newUser.temporaryPassword} (Copie esta senha, ela não será exibida novamente)`,
-        color: 'success'
-      })
-    } else {
-      toast.add({
-        title: 'Sucesso',
-        description: 'Usuário cadastrado com sucesso!',
-        color: 'success'
-      })
-    }
-
-    // Emite evento para atualizar a listagem
-    emit('userCreated')
-
-    // Limpa o formulário e fecha o modal
-    Object.assign(state, {
-      name: '',
-      email: '',
-      cpf: '',
-      phone: '',
-      roles: ['user']
-    })
-    open.value = false
-
-    // Redireciona para a página de detalhes do usuário
-    if (newUser?.id) {
-      await router.push(`/users/${newUser.id}`)
-    }
-  } catch (error: unknown) {
-    const err = error as { data?: { message?: string; statusMessage?: string } }
-    toast.add({
-      title: 'Erro',
-      description: err?.data?.statusMessage || err?.data?.message || 'Erro ao criar usuário. Tente novamente.',
-      color: 'error'
-    })
-  } finally {
-    loading.value = false
+  // Prepara o payload
+  const payload: CreateUserSchema = {
+    name: event.data.name,
+    email: event.data.email,
+    cpf: event.data.cpf,
+    phone: event.data.phone || undefined,
+    roles: event.data.roles
   }
+
+  // Executa a mutation
+  createUser(payload, {
+    onSuccess: newUser => {
+      // Exibe a senha temporária ao usuário
+      if (newUser?.temporaryPassword) {
+        toast.add({
+          title: 'Usuário cadastrado com sucesso!',
+          description: `Senha temporária: ${newUser.temporaryPassword} (Copie esta senha, ela não será exibida novamente)`,
+          color: 'success'
+        })
+      } else {
+        toast.add({
+          title: 'Sucesso',
+          description: 'Usuário cadastrado com sucesso!',
+          color: 'success'
+        })
+      }
+
+      // Emite evento para atualizar a listagem
+      emit('userCreated')
+
+      // Limpa o formulário e fecha o modal
+      Object.assign(state, {
+        name: '',
+        email: '',
+        cpf: '',
+        phone: '',
+        roles: []
+      })
+      open.value = false
+
+      // Redireciona para a página de detalhes do usuário
+      if (newUser?.id) {
+        router.push(`/users/${newUser.id}`)
+      }
+    },
+    onError: (error: any) => {
+      toast.add({
+        title: 'Erro',
+        description: error?.data?.statusMessage || error?.data?.message || 'Erro ao criar usuário. Tente novamente.',
+        color: 'error'
+      })
+    }
+  })
 }
 </script>
 
@@ -155,8 +152,8 @@ async function onSubmit(event: FormSubmitEvent<CreateUserSchema>) {
             :search-input="false" />
         </UFormField>
         <div class="flex justify-end gap-2">
-          <UButton label="Cancelar" color="neutral" variant="subtle" :disabled="loading" @click="open = false" />
-          <UButton label="Cadastrar" color="primary" variant="solid" type="submit" :loading="loading" />
+          <UButton label="Cancelar" color="neutral" variant="subtle" :disabled="isPending" @click="open = false" />
+          <UButton label="Cadastrar" color="primary" variant="solid" type="submit" :loading="isPending" />
         </div>
       </UForm>
     </template>

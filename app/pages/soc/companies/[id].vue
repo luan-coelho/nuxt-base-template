@@ -26,7 +26,7 @@ if (companyError.value) {
 
 const columnVisibility = ref()
 
-// Usando o composable de paginação para as unidades
+// Usando o composable de paginação para as unidades com TanStack Query
 const {
   data: units,
   pagination,
@@ -35,7 +35,7 @@ const {
   sortOrder,
   isLoading,
   toggleSort
-} = await usePaginatedFetch<SocUnit>(`/api/soc/companies/${companyId}/units`, {
+} = usePaginatedFetch<SocUnit>(`/soc/companies/${companyId}/units`, {
   initialLimit: 10,
   initialSortBy: 'name',
   initialSortOrder: 'asc'

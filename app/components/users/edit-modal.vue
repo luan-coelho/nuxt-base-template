@@ -2,6 +2,7 @@
 import type { FormSubmitEvent } from '@nuxt/ui'
 import { updateUserSchema, type UpdateUserSchema, type UserSchema as User } from '@/types/user'
 import { applyCPFMask, applyPhoneMask } from '@/utils/masks'
+import { useUpdateUserMutation } from '~/composables/useUsers'
 
 const props = defineProps<{
   user: User | null
@@ -12,7 +13,6 @@ const emit = defineEmits<{
 }>()
 
 const open = defineModel<boolean>('open', { default: false })
-const loading = ref(false)
 
 const roleOptions = [
   { value: 'admin', label: 'Administrador' },
@@ -75,48 +75,46 @@ watch(
 
 const toast = useToast()
 
+// Usa o hook de mutation do TanStack Query
+const { mutate: updateUser, isPending } = useUpdateUserMutation()
+
 async function onSubmit(event: FormSubmitEvent<UpdateUserSchema>) {
   if (!props.user) return
 
-  loading.value = true
-
-  try {
-    // Chama a API para atualizar o usuário
-    const payload: UpdateUserSchema = {
-      id: state.id,
-      name: event.data.name,
-      email: event.data.email,
-      cpf: event.data.cpf,
-      phone: event.data.phone || undefined,
-      roles: event.data.roles
-    }
-
-    await $fetch(`/api/users/${props.user.id}`, {
-      method: 'PATCH',
-      body: payload
-    })
-
-    toast.add({
-      title: 'Sucesso',
-      description: 'Usuário atualizado com sucesso!',
-      color: 'success'
-    })
-
-    // Emite evento para atualizar a listagem
-    emit('userUpdated')
-
-    // Fecha o modal
-    open.value = false
-  } catch (error: unknown) {
-    const err = error as { data?: { message?: string; statusMessage?: string } }
-    toast.add({
-      title: 'Erro',
-      description: err?.data?.statusMessage || err?.data?.message || 'Erro ao atualizar usuário. Tente novamente.',
-      color: 'error'
-    })
-  } finally {
-    loading.value = false
+  // Prepara o payload
+  const payload: UpdateUserSchema = {
+    id: state.id,
+    name: event.data.name,
+    email: event.data.email,
+    cpf: event.data.cpf,
+    phone: event.data.phone || undefined,
+    roles: event.data.roles
   }
+
+  // Executa a mutation
+  updateUser(payload, {
+    onSuccess: () => {
+      toast.add({
+        title: 'Sucesso',
+        description: 'Usuário atualizado com sucesso!',
+        color: 'success'
+      })
+
+      // Emite evento para atualizar a listagem
+      emit('userUpdated')
+
+      // Fecha o modal
+      open.value = false
+    },
+    onError: (error: any) => {
+      toast.add({
+        title: 'Erro',
+        description:
+          error?.data?.statusMessage || error?.data?.message || 'Erro ao atualizar usuário. Tente novamente.',
+        color: 'error'
+      })
+    }
+  })
 }
 </script>
 
@@ -156,8 +154,8 @@ async function onSubmit(event: FormSubmitEvent<UpdateUserSchema>) {
             :search-input="false" />
         </UFormField>
         <div class="flex justify-end gap-2">
-          <UButton label="Cancelar" color="neutral" variant="subtle" :disabled="loading" @click="open = false" />
-          <UButton label="Salvar" color="primary" variant="solid" type="submit" :loading="loading" />
+          <UButton label="Cancelar" color="neutral" variant="subtle" :disabled="isPending" @click="open = false" />
+          <UButton label="Salvar" color="primary" variant="solid" type="submit" :loading="isPending" />
         </div>
       </UForm>
     </template>
