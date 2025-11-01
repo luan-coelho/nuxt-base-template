@@ -1,7 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2024-07-11',
-  modules: ['@nuxt/eslint', '@nuxt/ui', '@vueuse/nuxt'],
+  modules: ['@nuxt/eslint', '@nuxt/ui', '@vueuse/nuxt', 'nuxt-auth-utils'],
   devtools: {
     enabled: true
   },
@@ -15,13 +15,18 @@ export default defineNuxtConfig({
     }
   },
   runtimeConfig: {
-    // SOC API Configuration
-    socEmpresa: process.env.SOC_EMPRESA,
-    socBaseUrl: process.env.SOC_BASE_URL,
-    socApiKeyCompanies: process.env.SOC_API_KEY_COMPANIES,
-    socApiKeyUnits: process.env.SOC_API_KEY_UNITS,
-    socApiKeySectors: process.env.SOC_API_KEY_SECTORS,
-    socApiKeyJobs: process.env.SOC_API_KEY_JOBS,
-    socApiKeyHierarchy: process.env.SOC_API_KEY_HIERARCHY
+    // Configuração de sessão
+    session: {
+      maxAge: 60 * 60 * 24 * 7, // 1 semana
+      name: 'nuxt-session',
+      cookie: {
+        sameSite: 'lax',
+        httpOnly: true
+      }
+    },
+    // URL da API backend
+    public: {
+      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || 'http://localhost:8080'
+    }
   }
 })

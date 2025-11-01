@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui'
-import { updateUserSchema, type UpdateUserFormValues, type User } from '~~/server/db/schemas'
-import { applyCPFMask, applyPhoneMask } from '../../utils/masks'
+import { updateUserSchema, type UpdateUserSchema, type UserSchema as User } from '@/types/user'
+import { applyCPFMask, applyPhoneMask } from '@/utils/masks'
 
 const props = defineProps<{
   user: User | null
@@ -20,7 +20,7 @@ const roleOptions = [
   { value: 'user', label: 'Usuário' }
 ]
 
-const state = reactive<UpdateUserFormValues>({
+const state = reactive<UpdateUserSchema>({
   id: '',
   name: '',
   email: '',
@@ -75,14 +75,14 @@ watch(
 
 const toast = useToast()
 
-async function onSubmit(event: FormSubmitEvent<UpdateUserFormValues>) {
+async function onSubmit(event: FormSubmitEvent<UpdateUserSchema>) {
   if (!props.user) return
 
   loading.value = true
 
   try {
     // Chama a API para atualizar o usuário
-    const payload: UpdateUserFormValues = {
+    const payload: UpdateUserSchema = {
       id: state.id,
       name: event.data.name,
       email: event.data.email,

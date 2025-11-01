@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
-import { authClient } from '~/lib/auth-client'
 
-const session = authClient.useSession()
+const { loggedIn, user: sessionUser, logout } = useAuth()
 
 defineProps<{
   collapsed?: boolean
@@ -11,13 +10,13 @@ defineProps<{
 const colorMode = useColorMode()
 
 const user = computed(() => {
-  if (session?.value.data?.user) {
+  if (loggedIn.value && sessionUser.value) {
     return {
-      name: session?.value.data.user.name,
-      email: session?.value.data.user.email,
+      name: sessionUser.value.name,
+      email: sessionUser.value.email,
       avatar: {
-        src: `https://ui-avatars.com/api/?name=${encodeURIComponent(session?.value.data.user.name)}&background=random`,
-        alt: session?.value.data.user.name
+        src: `https://ui-avatars.com/api/?name=${encodeURIComponent(sessionUser.value.name)}&background=random`,
+        alt: sessionUser.value.name
       }
     }
   }
@@ -33,13 +32,7 @@ const user = computed(() => {
 })
 
 async function handleLogout() {
-  await authClient.signOut({
-    fetchOptions: {
-      onSuccess: async () => {
-        await navigateTo('/auth/signin?fromLogout=true', { replace: true })
-      }
-    }
-  })
+  await logout()
 }
 
 const items = computed<DropdownMenuItem[][]>(() => [

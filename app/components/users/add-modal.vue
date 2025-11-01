@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import { createUserSchema, type CreateUserSchema } from '@/types/user'
 import type { FormSubmitEvent } from '@nuxt/ui'
-import { insertUserSchema, type UserFormValues } from '~~/server/db/schemas'
 import { applyCPFMask, applyPhoneMask } from '../../utils/masks'
 
 const emit = defineEmits<{
@@ -16,7 +16,7 @@ const roleOptions = [
   { value: 'user', label: 'Usuário' }
 ]
 
-const state = reactive<UserFormValues>({
+const state = reactive<CreateUserSchema>({
   name: '',
   email: '',
   cpf: '',
@@ -54,12 +54,12 @@ watch(
 const toast = useToast()
 const router = useRouter()
 
-async function onSubmit(event: FormSubmitEvent<UserFormValues>) {
+async function onSubmit(event: FormSubmitEvent<CreateUserSchema>) {
   loading.value = true
 
   try {
     // Chama a API para criar o usuário
-    const payload: UserFormValues = {
+    const payload: CreateUserSchema = {
       name: event.data.name,
       email: event.data.email,
       cpf: event.data.cpf,
@@ -126,7 +126,7 @@ async function onSubmit(event: FormSubmitEvent<UserFormValues>) {
     <UButton label="Cadastrar usuário" icon="i-lucide-plus" />
 
     <template #body>
-      <UForm :schema="insertUserSchema" :state="state" class="space-y-4" :validate-on="[]" @submit="onSubmit">
+      <UForm :schema="createUserSchema" :state="state" class="space-y-4" :validate-on="[]" @submit="onSubmit">
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <UFormField class="col-span-2 md:col-span-1" label="Nome" placeholder="John Doe" name="name">
             <UInput v-model="state.name" class="w-full" size="lg" />

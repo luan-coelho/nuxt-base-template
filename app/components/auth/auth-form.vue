@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui'
-import { authClient } from '~/lib/auth-client'
 import { reactive, ref } from 'vue'
 import * as z from 'zod'
 
 const schema = z.object({
-  email: z.email('Informe um email válido'),
+  email: z.string().email('Informe um email válido'),
   password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres'),
   remember: z.boolean().optional()
 })
 
 type SignInSchema = z.infer<typeof schema>
 
-const route = useRoute()
+const router = useRouter()
+const { signin } = useAuth()
+
 const formError = ref<string | null>(null)
 const showPassword = ref(false)
 const loading = ref(false)
@@ -28,41 +29,23 @@ function togglePasswordVisibility() {
 }
 
 async function onSubmit({ data }: FormSubmitEvent<SignInSchema>) {
+  loading.value = true
   formError.value = null
 
-  await authClient.signIn.email(
-    {
-      email: data.email,
-      password: data.password,
-      rememberMe: data.remember,
-      callbackURL: typeof route.query.redirect === 'string' ? route.query.redirect : '/' // Redireciona para a URL original ou para a raiz
-    },
-    {
-      onRequest: () => {
-        loading.value = true
-        formError.value = null
-      },
-      onSuccess: async () => {
-        loading.value = false
-      },
-      onError: ctx => {
-        loading.value = false
+  try {
+    const result = await signin(data.email, data.password)
 
-        if (ctx.error.status === 401) {
-          formError.value = 'Credenciais inválidas. Verifique os dados e tente novamente.'
-          return
-        }
-
-        // Tratamento específico para email não verificado
-        if (ctx.error.status === 403) {
-          formError.value = 'Por favor, verifique seu endereço de email'
-          return
-        }
-
-        formError.value = ctx.error.message || 'Credenciais inválidas. Verifique os dados e tente novamente.'
-      }
+    if (result.success) {
+      // Redireciona para a página inicial após o login
+      await router.push('/')
+    } else {
+      formError.value = result.error || 'Erro ao fazer login'
     }
-  )
+  } catch (error: any) {
+    formError.value = error.message || 'Erro ao fazer login'
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 

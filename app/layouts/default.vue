@@ -28,6 +28,14 @@ const links = [
       onSelect: () => {
         open.value = false
       }
+    },
+    {
+      label: 'Empresas SOC',
+      icon: 'i-lucide-building',
+      to: '/soc/companies',
+      onSelect: () => {
+        open.value = false
+      }
     }
   ]
 ] satisfies NavigationMenuItem[][]

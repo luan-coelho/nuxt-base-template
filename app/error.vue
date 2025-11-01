@@ -24,7 +24,6 @@ useHead({
       :error="{
         statusCode: 404,
         statusMessage: 'Página Não Encontrada',
-        message: error.message || 'Desculpe, mas esta página não pôde ser encontrada.'
       }" />
 
     <UError
