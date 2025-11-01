@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { pt_br } from '@nuxt/ui/locale'
+import { VueQueryDevtools } from '@tanstack/vue-query-devtools'
 
 const colorMode = useColorMode()
 
@@ -38,5 +39,7 @@ useSeoMeta({
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
+
+    <VueQueryDevtools />
   </UApp>
 </template>

@@ -23,7 +23,7 @@ useHead({
       v-if="error.statusCode === 404"
       :error="{
         statusCode: 404,
-        statusMessage: 'Página Não Encontrada',
+        statusMessage: 'Página Não Encontrada'
       }" />
 
     <UError
