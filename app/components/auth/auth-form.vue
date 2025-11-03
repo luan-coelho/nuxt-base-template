@@ -33,7 +33,7 @@ async function onSubmit({ data }: FormSubmitEvent<SignInSchema>) {
   formError.value = null
 
   try {
-    const result = await signin(data.email, data.password)
+    const result = await signin({ email: data.email, password: data.password })
 
     if (result.success) {
       // Redireciona para a página inicial após o login
