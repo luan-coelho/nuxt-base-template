@@ -1,89 +1,127 @@
 <script setup lang="ts">
-import { z } from 'zod'
+import type { FormSubmitEvent } from '@nuxt/ui'
+import { reactive, ref } from 'vue'
+import * as z from 'zod'
 
-// Schema de validação
 const schema = z.object({
-  email: z.string().email('E-mail inválido'),
-  password: z.string().min(1, 'Senha é obrigatória')
+  email: z.string().email('Informe um email válido'),
+  password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres'),
+  remember: z.boolean().optional()
 })
 
-type Schema = z.output<typeof schema>
+type SignInSchema = z.infer<typeof schema>
 
-// Usar o composable de autenticação
-const { signin, isLoggingIn } = useAuth()
 const router = useRouter()
+const { signin } = useAuth()
 
-// Estado do formulário
-const state = reactive({
-  email: undefined,
-  password: undefined
+const formError = ref<string | null>(null)
+const showPassword = ref(false)
+const loading = ref(false)
+
+const state = reactive<SignInSchema>({
+  email: '',
+  password: '',
+  remember: false
 })
 
-// Submissão do formulário
-async function onSubmit(event: any) {
-  const data = event.data as Schema
-  try {
-    await signin({
-      email: data.email,
-      password: data.password
-    })
+function togglePasswordVisibility() {
+  showPassword.value = !showPassword.value
+}
 
-    // Redirecionar para home após login
-    await router.push('/')
-  } catch (error) {
-    // Erro já tratado no composable
-    console.error('Erro ao fazer login:', error)
+async function onSubmit({ data }: FormSubmitEvent<SignInSchema>) {
+  loading.value = true
+  formError.value = null
+
+  try {
+    const result = await signin(data.email, data.password)
+
+    if (result.success) {
+      // Redireciona para a página inicial após o login
+      await router.push('/')
+    } else {
+      formError.value = result.error || 'Erro ao fazer login'
+    }
+  } catch (error: any) {
+    formError.value = error.message || 'Erro ao fazer login'
+  } finally {
+    loading.value = false
   }
 }
 </script>
 
 <template>
-  <div class="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8 dark:bg-gray-900">
-    <UCard class="w-full max-w-md">
+  <div
+    class="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-slate-100 via-white to-slate-200 px-4 py-12 dark:from-slate-900 dark:via-slate-950 dark:to-black">
+    <div class="pointer-events-none absolute inset-0">
+      <div class="bg-primary-400/40 dark:bg-primary-500/20 absolute top-16 -left-32 h-72 w-72 rounded-full blur-3xl" />
+      <div class="absolute right-0 bottom-0 h-96 w-96 rounded-full bg-indigo-300/20 blur-3xl dark:bg-indigo-500/10" />
+    </div>
+
+    <UCard
+      class="relative z-10 w-full max-w-xl border border-slate-200/60 bg-white/80 p-8 text-slate-900 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-white/5 dark:text-white">
       <template #header>
-        <div class="text-center">
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Entrar</h2>
-          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Acesse sua conta para continuar</p>
+        <div class="flex flex-col gap-3 text-center">
+          <div
+            class="bg-primary-400/15 dark:bg-primary-500/20 mx-auto flex size-12 items-center justify-center rounded-full">
+            <UIcon name="i-lucide-lock" class="text-primary-500 dark:text-primary-400 size-6" />
+          </div>
+          <div>
+            <h1 class="text-2xl font-semibold">Bem-vindo</h1>
+            <p class="text-sm text-slate-600 dark:text-white/60">Entre com suas credenciais para acessar o sistema</p>
+          </div>
         </div>
       </template>
 
-      <UForm :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
-        <UFormField label="E-mail" name="email" required>
-          <UInput
-            v-model="state.email"
-            type="email"
-            placeholder="seu@email.com"
-            icon="i-lucide-mail"
-            autocomplete="email"
-            :disabled="isLoggingIn" />
+      <UAlert
+        v-if="formError"
+        class="mb-4"
+        color="error"
+        icon="i-lucide-alert-triangle"
+        variant="subtle"
+        :description="formError" />
+
+      <UForm :schema="schema" :state="state" class="space-y-6" @submit="onSubmit">
+        <UFormField name="email" label="Email" required size="xl">
+          <UInput v-model="state.email" type="email" size="xl" placeholder="Informe seu email" class="w-full" />
         </UFormField>
 
-        <UFormField label="Senha" name="password" required>
+        <UFormField name="password" label="Senha" required size="xl">
           <UInput
             v-model="state.password"
-            type="password"
-            placeholder="••••••••"
-            icon="i-lucide-lock"
-            autocomplete="current-password"
-            :disabled="isLoggingIn" />
+            :type="showPassword ? 'text' : 'password'"
+            size="xl"
+            placeholder="Informe sua senha"
+            class="w-full">
+            <template #trailing>
+              <button
+                type="button"
+                class="flex size-6 items-center justify-center rounded-full bg-slate-200/60 text-slate-600 transition hover:bg-slate-200 dark:bg-white/10 dark:text-white/70 dark:hover:bg-white/20"
+                :aria-label="showPassword ? 'Ocultar senha' : 'Mostrar senha'"
+                @click="togglePasswordVisibility">
+                <UIcon :name="showPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'" class="size-4" />
+              </button>
+            </template>
+          </UInput>
         </UFormField>
 
-        <div class="flex items-center justify-between">
-          <UCheckbox label="Lembrar-me" />
-          <UButton variant="link" color="primary" size="sm" to="/auth/forgot-password">Esqueceu a senha?</UButton>
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <UFormField name="remember">
+            <UCheckbox v-model="state.remember" label="Manter conectado" />
+          </UFormField>
+
+          <NuxtLink
+            to="/auth/forgot-password"
+            class="text-primary-600 hover:text-primary-500 dark:text-primary-300 dark:hover:text-primary-200 text-sm font-medium transition">
+            Esqueci minha senha
+          </NuxtLink>
         </div>
 
-        <UButton type="submit" block size="lg" :loading="isLoggingIn" :disabled="isLoggingIn">
-          {{ isLoggingIn ? 'Entrando...' : 'Entrar' }}
-        </UButton>
+        <div class="space-y-3">
+          <UButton type="submit" size="xl" block :loading="loading" class="justify-center" icon="i-lucide-log-in">
+            Acessar
+          </UButton>
+        </div>
       </UForm>
-
-      <template #footer>
-        <div class="text-center text-sm text-gray-600 dark:text-gray-400">
-          Não tem uma conta?
-          <UButton variant="link" color="primary" size="sm" to="/auth/register">Cadastre-se</UButton>
-        </div>
-      </template>
     </UCard>
   </div>
 </template>
