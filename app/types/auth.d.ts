@@ -1,25 +1,30 @@
-// Tipos customizados para autenticação
+// Extensão de tipos para nuxt-auth-utils
+
 declare module '#auth-utils' {
+  // Definição do usuário na sessão
   interface User {
     id: string
     name: string
     email: string
     cpf: string
-    roles: ('ADMIN' | 'USER' | 'MANAGER')[]
-    passwordMustChange: boolean
+    phone?: string
+    roles: string[]
     active: boolean
-    phone?: string | undefined
+    passwordMustChange?: boolean
   }
 
+  // Definição dos dados da sessão do usuário
   interface UserSession {
-    user: User
-    loggedInAt: number
-    secure: SecureSessionData | undefined
+    // Data de login (timestamp)
+    loggedInAt?: number
+    // Tempo de expiração do access token (timestamp)
+    expiresAt?: number
   }
 
+  // Dados sensíveis da sessão (acessíveis apenas no server)
   interface SecureSessionData {
-    accessToken: string
-    refreshToken: string
+    // Tokens não precisam ser armazenados pois são gerenciados via cookies HTTP-only
+    // Você pode adicionar outros dados sensíveis aqui se necessário
   }
 }
 

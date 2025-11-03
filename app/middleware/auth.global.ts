@@ -5,7 +5,7 @@ export default defineNuxtRouteMiddleware(async to => {
   // Verifica se a rota atual é pública
   const isPublicRoute = publicRoutes.includes(to.path)
 
-  // Obtém a sessão do usuário
+  // Obtém a sessão do usuário (fornecido pelo nuxt-auth-utils)
   const { loggedIn, user } = useUserSession()
 
   // Se não há sessão e a rota não é pública, redireciona para login

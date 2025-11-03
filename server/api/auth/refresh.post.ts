@@ -1,54 +1,60 @@
-// Endpoint de refresh token
 export default defineEventHandler(async event => {
   const config = useRuntimeConfig()
 
-  // Obtém a sessão atual
-  const session = await getUserSession(event)
-
-  if (!session.secure?.refreshToken) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Refresh token não encontrado'
-    })
-  }
-
   try {
-    // Faz a requisição para a API Quarkus
-    const response = await $fetch(`${config.public.apiBaseUrl}/auth/refresh`, {
+    // Verificar se há uma sessão atual
+    const session = await getUserSession(event)
+
+    // Se não há sessão ou o token expirou, renovar
+    const now = Date.now()
+    const expiresAt = typeof session.expiresAt === 'number' ? session.expiresAt : 0
+    const shouldRefresh = !session.user || (expiresAt > 0 && now >= expiresAt)
+
+    if (!shouldRefresh) {
+      // Sessão ainda válida
+      return session.user
+    }
+
+    // Fazer requisição para o backend Java para renovar tokens
+    const response = await $fetch<any>(`${config.apiBaseUrl}/auth/refresh`, {
       method: 'POST',
-      body: {
-        refreshToken: session.secure.refreshToken
+      credentials: 'include', // Incluir refresh token via cookie
+      onResponse({ response }) {
+        // Copiar novos cookies do backend
+        const setCookieHeader = response.headers.get('set-cookie')
+        if (setCookieHeader) {
+          setResponseHeaders(event, {
+            'set-cookie': setCookieHeader
+          })
+        }
       }
     })
 
-    // Extrai os novos tokens
-    const { accessToken, refreshToken } = response as {
-      accessToken: string
-      refreshToken: string
-      tokenType: string
-      expiresAt: string
-    }
-
-    // Atualiza a sessão com os novos tokens
+    // Atualizar sessão com novos dados
     await setUserSession(event, {
-      ...session,
-      secure: {
-        accessToken,
-        refreshToken
-      }
+      user: {
+        id: response.id,
+        name: response.name,
+        email: response.email,
+        cpf: response.cpf,
+        phone: response.phone,
+        roles: response.roles,
+        active: true
+      },
+      loggedInAt: session.loggedInAt || Date.now(),
+      expiresAt: Date.now() + 60 * 60 * 1000 // 1 hora
     })
 
-    return {
-      success: true,
-      message: 'Token renovado com sucesso'
-    }
+    return response
   } catch (error: any) {
-    // Se o refresh falhar, limpa a sessão
+    console.error('Erro ao renovar token:', error)
+
+    // Limpar sessão em caso de erro
     await clearUserSession(event)
 
     throw createError({
-      statusCode: error.statusCode || 401,
-      statusMessage: error.data?.error?.message || 'Falha ao renovar token'
+      statusCode: 401,
+      message: 'Sessão expirada. Faça login novamente.'
     })
   }
 })

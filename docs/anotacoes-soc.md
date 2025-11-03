@@ -1,3 +1,0 @@
-## Hierarquia
-
-EMPRESA -> UNIDADE -> SETOR -> HIERARQUIA -> CARGO -> FUNCIONÁRIO

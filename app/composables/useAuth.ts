@@ -1,193 +1,207 @@
-import type { Role } from '~/types/user'
+import type { z } from 'zod'
 
-// Composable para facilitar o uso da autenticação
-export const useAuth = () => {
-  const { loggedIn, user, session, fetch: fetchSession, clear: clearSession } = useUserSession()
+// Schema para validação de login
+const signinSchema = {
+  email: '',
+  password: ''
+} as const
+
+type SigninCredentials = {
+  email: string
+  password: string
+}
+
+/**
+ * Composable para gerenciar autenticação com nuxt-auth-utils
+ * Integra com backend Java que gerencia tokens via cookies HTTP-only
+ */
+export function useAuth() {
   const router = useRouter()
-  const config = useRuntimeConfig()
+  const toast = useToast()
+
+  // Usar o composable nativo do nuxt-auth-utils
+  const { loggedIn, user, session, fetch: fetchSession, clear: clearSession } = useUserSession()
+
+  // Estados de loading
+  const isLoggingIn = ref(false)
+  const isLoggingOut = ref(false)
+  const isRefreshing = ref(false)
 
   /**
-   * Realiza login do usuário
+   * Realizar login no sistema
    */
-  const signin = async (email: string, password: string) => {
+  async function signin(credentials: SigninCredentials) {
+    isLoggingIn.value = true
+
     try {
-      await $fetch('/api/auth/signin', {
+      // Chamar API local que se comunica com backend Java
+      const response = await $fetch('/api/auth/signin', {
         method: 'POST',
-        body: { email, password }
+        body: credentials
       })
 
-      // Atualiza a sessão
+      // Buscar sessão atualizada
       await fetchSession()
 
-      return { success: true }
+      toast.add({
+        title: 'Login realizado com sucesso!',
+        color: 'success'
+      })
+
+      return response
     } catch (error: any) {
-      return {
-        success: false,
-        error: error.data?.message || error.message || 'Erro ao fazer login'
-      }
+      console.error('Erro no login:', error)
+
+      const message = error.data?.message || error.message || 'Erro ao fazer login'
+
+      toast.add({
+        title: 'Erro no login',
+        description: message,
+        color: 'error'
+      })
+
+      throw error
+    } finally {
+      isLoggingIn.value = false
     }
   }
 
   /**
-   * Registra novo usuário
+   * Realizar logout do sistema
    */
-  const register = async (data: { name: string; email: string; cpf?: string; password: string; roles?: string[] }) => {
+  async function logout() {
+    isLoggingOut.value = true
+
     try {
-      await $fetch('/api/auth/register', {
-        method: 'POST',
-        body: data
-      })
-
-      // Atualiza a sessão
-      await fetchSession()
-
-      return { success: true }
-    } catch (error: any) {
-      return {
-        success: false,
-        error: error.data?.message || error.message || 'Erro ao registrar usuário'
-      }
-    }
-  }
-
-  /**
-   * Realiza logout do usuário
-   */
-  const logout = async () => {
-    try {
+      // Chamar API local que se comunica com backend Java
       await $fetch('/api/auth/logout', {
         method: 'POST'
       })
 
-      // Limpa a sessão local
+      // Limpar sessão local
       await clearSession()
 
-      // Redireciona para login
-      await router.push('/auth/signin?fromLogout=true')
+      toast.add({
+        title: 'Logout realizado com sucesso',
+        color: 'success'
+      })
 
-      return { success: true }
+      // Redirecionar para login
+      await router.push('/auth/signin')
     } catch (error: any) {
-      return {
-        success: false,
-        error: error.data?.message || error.message || 'Erro ao fazer logout'
-      }
+      console.error('Erro no logout:', error)
+
+      // Mesmo com erro, limpar sessão e redirecionar
+      await clearSession()
+      await router.push('/auth/signin')
+    } finally {
+      isLoggingOut.value = false
     }
   }
 
   /**
-   * Renova o token de autenticação
+   * Renovar token de acesso
    */
-  const refreshToken = async () => {
+  async function refreshToken() {
+    isRefreshing.value = true
+
     try {
-      await $fetch('/api/auth/refresh', {
+      const response = await $fetch('/api/auth/refresh', {
         method: 'POST'
       })
 
-      // Atualiza a sessão
+      // Atualizar sessão
       await fetchSession()
 
-      return { success: true }
+      return response
     } catch (error: any) {
-      // Se o refresh falhar, faz logout
+      console.error('Erro ao renovar token:', error)
+
+      // Se falhar, fazer logout
       await clearSession()
       await router.push('/auth/signin')
 
-      return {
-        success: false,
-        error: error.data?.message || error.message || 'Erro ao renovar token'
-      }
+      throw error
+    } finally {
+      isRefreshing.value = false
     }
   }
 
   /**
-   * Verifica se o usuário tem uma role específica
+   * Obter dados atualizados do usuário
    */
-  const hasRole = (role: Role): boolean => {
-    return user.value?.roles?.includes(role) ?? false
-  }
-
-  /**
-   * Verifica se o usuário tem qualquer uma das roles especificadas
-   */
-  const hasAnyRole = (roles: Role[]): boolean => {
-    return roles.some(role => hasRole(role))
-  }
-
-  /**
-   * Verifica se o usuário tem todas as roles especificadas
-   */
-  const hasAllRoles = (roles: Role[]): boolean => {
-    return roles.every(role => hasRole(role))
-  }
-
-  /**
-   * Faz uma requisição autenticada para a API backend
-   */
-  const fetchAPI = async <T = any>(
-    endpoint: string,
-    options: {
-      method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
-      body?: any
-      query?: Record<string, any>
-    } = {}
-  ): Promise<T> => {
-    // Obtém o token de acesso da sessão
-    const accessToken = session.value?.secure?.accessToken
-
-    if (!accessToken) {
-      throw new Error('Token de acesso não encontrado')
-    }
-
+  async function fetchUser() {
     try {
-      return await $fetch<T>(`${config.public.apiBaseUrl}${endpoint}`, {
-        ...options,
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      })
+      const response = await $fetch<{ success: boolean; data: any }>('/api/auth/me')
+      return response.data
     } catch (error: any) {
-      // Se o token expirou, tenta renovar
+      console.error('Erro ao buscar usuário:', error)
+
+      // Se não autenticado, redirecionar para login
       if (error.statusCode === 401) {
-        const refreshResult = await refreshToken()
-
-        if (refreshResult.success) {
-          // Tenta novamente com o novo token
-          const newAccessToken = session.value?.secure?.accessToken
-
-          return await $fetch<T>(`${config.public.apiBaseUrl}${endpoint}`, {
-            ...options,
-            headers: {
-              Authorization: `Bearer ${newAccessToken}`,
-              'Content-Type': 'application/json'
-            }
-          })
-        }
+        await clearSession()
+        await router.push('/auth/signin')
       }
 
       throw error
     }
   }
 
+  /**
+   * Verificar se usuário tem uma role específica
+   */
+  function hasRole(role: string): boolean {
+    if (!user.value?.roles) return false
+    return user.value.roles.includes(role)
+  }
+
+  /**
+   * Verificar se usuário tem qualquer uma das roles
+   */
+  function hasAnyRole(roles: string[]): boolean {
+    if (!user.value?.roles) return false
+    return roles.some(role => user.value?.roles.includes(role))
+  }
+
+  /**
+   * Verificar se usuário tem todas as roles
+   */
+  function hasAllRoles(roles: string[]): boolean {
+    if (!user.value?.roles) return false
+    return roles.every(role => user.value?.roles.includes(role))
+  }
+
+  /**
+   * Verificar se é admin
+   */
+  const isAdmin = computed(() => hasRole('ADMIN'))
+
+  /**
+   * Verificar se é manager
+   */
+  const isManager = computed(() => hasRole('MANAGER'))
+
   return {
     // Estado
     loggedIn,
     user,
     session,
+    isLoggingIn: readonly(isLoggingIn),
+    isLoggingOut: readonly(isLoggingOut),
+    isRefreshing: readonly(isRefreshing),
 
-    // Métodos de autenticação
+    // Computed
+    isAdmin,
+    isManager,
+
+    // Métodos
     signin,
-    register,
     logout,
     refreshToken,
+    fetchUser,
     fetchSession,
-
-    // Verificação de roles
     hasRole,
     hasAnyRole,
-    hasAllRoles,
-
-    // Requisições autenticadas
-    fetchAPI
+    hasAllRoles
   }
 }

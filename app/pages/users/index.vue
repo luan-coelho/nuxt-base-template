@@ -1,28 +1,12 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
-import type { User } from '~~/server/db/schemas'
+import type { UserSchema as User } from '@/types/user'
 
 const UButton = resolveComponent('UButton')
 const UBadge = resolveComponent('UBadge')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
 
 const columnVisibility = ref()
-
-// Usando o composable de paginação reutilizável com TanStack Query
-const {
-  data: users,
-  pagination,
-  page,
-  sortBy,
-  sortOrder,
-  isLoading,
-  refetch,
-  toggleSort
-} = usePaginatedFetch<User>('/api/users', {
-  initialLimit: 10,
-  initialSortBy: 'createdAt',
-  initialSortOrder: 'desc'
-})
 
 // Estado para controlar o modal de edição
 const editModalOpen = ref(false)
@@ -56,24 +40,14 @@ function getRowItems(user: User) {
 }
 
 const columns: TableColumn<User>[] = [
-  // Removido: coluna de seleção
   {
     accessorKey: 'name',
     header: () => {
-      const isSortedByName = sortBy.value === 'name'
-      const currentOrder = sortOrder.value
-
       return h(UButton, {
         color: 'neutral',
         variant: 'ghost',
         label: 'Nome',
-        icon: isSortedByName
-          ? currentOrder === 'asc'
-            ? 'i-lucide-arrow-up-narrow-wide'
-            : 'i-lucide-arrow-down-wide-narrow'
-          : 'i-lucide-arrow-up-down',
-        class: '-mx-2.5',
-        onClick: () => toggleSort('name')
+        class: '-mx-2.5'
       })
     },
     cell: ({ row }) => h('span', { class: 'font-medium text-highlighted' }, row.original.name)
@@ -81,20 +55,11 @@ const columns: TableColumn<User>[] = [
   {
     accessorKey: 'email',
     header: () => {
-      const isSortedByEmail = sortBy.value === 'email'
-      const currentOrder = sortOrder.value
-
       return h(UButton, {
         color: 'neutral',
         variant: 'ghost',
         label: 'Email',
-        icon: isSortedByEmail
-          ? currentOrder === 'asc'
-            ? 'i-lucide-arrow-up-narrow-wide'
-            : 'i-lucide-arrow-down-wide-narrow'
-          : 'i-lucide-arrow-up-down',
-        class: '-mx-2.5',
-        onClick: () => toggleSort('email')
+        class: '-mx-2.5'
       })
     }
   },
@@ -148,10 +113,10 @@ const columns: TableColumn<User>[] = [
 
     <template #body>
       <div class="flex items-center justify-end">
-        <UsersAddModal @user-created="refetch" />
+        <UsersAddModal />
       </div>
 
-      <UsersEditModal v-model:open="editModalOpen" :user="selectedUser" @user-updated="refetch" />
+      <UsersEditModal v-model:open="editModalOpen" :user="selectedUser" />
 
       <UTable
         ref="table"
@@ -169,15 +134,7 @@ const columns: TableColumn<User>[] = [
         }" />
 
       <div class="border-default mt-auto flex items-center justify-between gap-3 border-t pt-4">
-        <div class="text-muted text-sm">Mostrando {{ users.length }} de {{ pagination.total }} usuários</div>
-
-        <div class="flex items-center gap-1.5">
-          <UPagination
-            v-if="pagination.totalPages > 1"
-            v-model:page="page"
-            :items-per-page="pagination.limit"
-            :total="pagination.total" />
-        </div>
+        <div class="flex items-center gap-1.5"></div>
       </div>
     </template>
   </UDashboardPanel>
