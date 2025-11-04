@@ -1,34 +1,29 @@
-const publicRoutes = ['/auth/signin', '/auth/register', '/auth/forgot-password']
-const changePasswordRoute = '/auth/change-password'
+/**
+ * Middleware global de autenticação
+ * Protege rotas privadas e gerencia redirecionamentos baseados no estado de autenticação
+ */
+
+// Rotas que não requerem autenticação
+const publicRoutes = ['/login', '/register', '/']
 
 export default defineNuxtRouteMiddleware(async to => {
-  // Verifica se a rota atual é pública
+  const { session, loading, loadUser } = useUserSession()
+
+  // Se está carregando, aguarda (importante para SSR)
+  if (loading.value) {
+    await loadUser()
+  }
+
   const isPublicRoute = publicRoutes.includes(to.path)
+  const isAuthenticated = session.value.loggedIn
 
-  // Obtém a sessão do usuário (fornecido pelo nuxt-auth-utils)
-  const { loggedIn, user } = useUserSession()
-
-  // Se não há sessão e a rota não é pública, redireciona para login
-  if (!loggedIn.value && !isPublicRoute && to.path !== changePasswordRoute) {
-    return navigateTo('/auth/signin')
+  // Se está tentando acessar uma rota privada sem estar autenticado
+  if (!isAuthenticated && !isPublicRoute) {
+    return navigateTo('/login')
   }
 
-  // Se há sessão, verifica se o usuário precisa alterar a senha
-  if (loggedIn.value && user.value) {
-    // Se o usuário precisa alterar a senha e não está na página de troca de senha
-    if (user.value.passwordMustChange && to.path !== changePasswordRoute) {
-      return navigateTo(changePasswordRoute)
-    }
-
-    // Se o usuário não precisa alterar a senha e está na página de troca de senha forçada
-    if (!user.value.passwordMustChange && to.path === changePasswordRoute) {
-      return navigateTo('/')
-    }
-  }
-
-  // Se há sessão e o usuário está tentando acessar a página de login, redireciona para home
-  // Mas apenas se a navegação não vem de uma ação de logout
-  if (loggedIn.value && isPublicRoute && !to.query.fromLogout) {
-    return navigateTo('/')
+  // Se está autenticado e tentando acessar login/register, redireciona para dashboard
+  if (isAuthenticated && (to.path === '/login' || to.path === '/register')) {
+    return navigateTo('/dashboard')
   }
 })
