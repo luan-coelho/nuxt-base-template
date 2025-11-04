@@ -1,8 +1,8 @@
-# Guia de Integração Frontend - Autenticação Baseada em Cookies
+# Guia de Integração - Autenticação Baseada em Cookies
 
 ## Visão Geral
 
-O frontend não precisa manipular tokens manualmente, pois eles são gerenciados automaticamente pelos cookies gerados pelo backend.
+A API que está em localhost:8080 utiliza autenticação baseada em **cookies HttpOnly Secure** para gerenciar tokens JWT. O frontend não precisa manipular tokens manualmente, pois eles são gerenciados pela API.
 
 ## Características da Autenticação
 
@@ -43,7 +43,7 @@ Content-Type: application/json
 
 #### Response Success (200 OK)
 
-**Cookies definidos:**
+**Após autenticação bem sucedida é retornado 2 cookies:**
 
 - `accessToken`: Token JWT de acesso (HttpOnly, Secure)
 - `refreshToken`: Token JWT de renovação (HttpOnly, Secure)
@@ -311,7 +311,3 @@ Content-Type: (qualquer)
 - `refreshToken`: Cookie expirado
 
 **Body:** Vazio
-
-### 4. Validação de Entrada
-
-Sempre valide os dados no frontend antes de enviar para a API, mas **nunca confie apenas na validação do frontend**.

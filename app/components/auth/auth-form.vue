@@ -12,7 +12,6 @@ const schema = z.object({
 type SignInSchema = z.infer<typeof schema>
 
 const router = useRouter()
-const { signin } = useAuth()
 
 const formError = ref<string | null>(null)
 const showPassword = ref(false)
@@ -33,14 +32,6 @@ async function onSubmit({ data }: FormSubmitEvent<SignInSchema>) {
   formError.value = null
 
   try {
-    const result = await signin({ email: data.email, password: data.password })
-
-    if (result.success) {
-      // Redireciona para a página inicial após o login
-      await router.push('/')
-    } else {
-      formError.value = result.error || 'Erro ao fazer login'
-    }
   } catch (error: any) {
     formError.value = error.message || 'Erro ao fazer login'
   } finally {

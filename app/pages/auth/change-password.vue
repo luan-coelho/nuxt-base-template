@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui'
-import { authClient } from '~/lib/auth-client'
 import { z } from 'zod'
 
 definePageMeta({
@@ -77,17 +76,6 @@ async function onSubmit(event: FormSubmitEvent<ChangePasswordForm>) {
   loading.value = true
 
   try {
-    // Alterar a senha usando o Better Auth
-    const { error } = await authClient.changePassword({
-      currentPassword: event.data.currentPassword,
-      newPassword: event.data.newPassword,
-      revokeOtherSessions: true
-    })
-
-    if (error) {
-      throw new Error(error.message)
-    }
-
     // Atualizar o campo passwordMustChange para false
     await $fetch('/api/users/update-password-status', {
       method: 'PATCH'
