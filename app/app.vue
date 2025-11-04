@@ -3,6 +3,7 @@ import { pt_br } from '@nuxt/ui/locale'
 import { VueQueryDevtools } from '@tanstack/vue-query-devtools'
 
 const colorMode = useColorMode()
+const { isAuthLoading } = useUserSession()
 
 const color = computed(() => (colorMode.value === 'dark' ? '#1b1718' : 'white'))
 
@@ -36,7 +37,11 @@ useSeoMeta({
   <UApp :locale="pt_br">
     <NuxtLoadingIndicator />
 
-    <NuxtLayout>
+    <!-- Loading Screen durante autenticação inicial -->
+    <AuthLoading v-if="isAuthLoading" message="Validando sessão" />
+
+    <!-- Conteúdo da aplicação -->
+    <NuxtLayout v-show="!isAuthLoading">
       <NuxtPage />
     </NuxtLayout>
 

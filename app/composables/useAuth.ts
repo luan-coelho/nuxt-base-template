@@ -10,6 +10,28 @@ export const useAuth = () => {
   const { setUser, clear: clearSession } = useUserSession()
   const config = useRuntimeConfig()
   const apiBaseUrl = config.public.apiBaseUrl || 'http://localhost:8080'
+  
+  /**
+   * Função auxiliar para fazer requisições que automaticamente
+   * encaminha cookies no servidor (SSR) e usa credentials no cliente
+   */
+  const makeAuthRequest = async <T>(url: string, options: any = {}): Promise<T> => {
+    // No servidor, usa useRequestFetch que encaminha cookies automaticamente
+    if (import.meta.server) {
+      const event = useRequestEvent()
+      if (event) {
+        // Usa o fetch do evento de requisição que inclui os cookies
+        const requestFetch = useRequestFetch()
+        return requestFetch(url, options)
+      }
+    }
+    
+    // No cliente, usa $fetch normal com credentials: 'include'
+    return $fetch(url, {
+      ...options,
+      credentials: 'include'
+    })
+  }
 
   /**
    * Realiza o login do usuário
@@ -17,10 +39,9 @@ export const useAuth = () => {
    */
   const login = async (credentials: LoginCredentials) => {
     try {
-      const response = await $fetch<AuthResponse>(`${apiBaseUrl}/auth/signin`, {
+      const response = await makeAuthRequest<AuthResponse>(`${apiBaseUrl}/auth/signin`, {
         method: 'POST',
-        body: credentials,
-        credentials: 'include' // Importante: envia e recebe cookies
+        body: credentials
       })
 
       // Armazena o usuário no estado global
@@ -46,10 +67,9 @@ export const useAuth = () => {
    */
   const register = async (userData: RegisterRequest) => {
     try {
-      const response = await $fetch<AuthResponse>(`${apiBaseUrl}/auth/register`, {
+      const response = await makeAuthRequest<AuthResponse>(`${apiBaseUrl}/auth/register`, {
         method: 'POST',
-        body: userData,
-        credentials: 'include'
+        body: userData
       })
 
       setUser(response.user)
@@ -73,9 +93,8 @@ export const useAuth = () => {
    */
   const refresh = async () => {
     try {
-      const user = await $fetch<User>(`${apiBaseUrl}/auth/refresh`, {
-        method: 'POST',
-        credentials: 'include'
+      const user = await makeAuthRequest<User>(`${apiBaseUrl}/auth/refresh`, {
+        method: 'POST'
       })
 
       setUser(user)
@@ -100,9 +119,8 @@ export const useAuth = () => {
    */
   const fetchUser = async () => {
     try {
-      const response = await $fetch<{ data: User }>(`${apiBaseUrl}/auth/me`, {
-        method: 'GET',
-        credentials: 'include'
+      const response = await makeAuthRequest<{ data: User }>(`${apiBaseUrl}/auth/me`, {
+        method: 'GET'
       })
 
       setUser(response.data)
@@ -131,9 +149,8 @@ export const useAuth = () => {
    */
   const logout = async () => {
     try {
-      await $fetch(`${apiBaseUrl}/auth/logout`, {
-        method: 'POST',
-        credentials: 'include'
+      await makeAuthRequest(`${apiBaseUrl}/auth/logout`, {
+        method: 'POST'
       })
     } catch (error) {
       console.error('Erro ao fazer logout:', error)

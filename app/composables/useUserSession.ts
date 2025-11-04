@@ -9,6 +9,9 @@ export const useUserSession = () => {
   // Estado reativo compartilhado e SSR-friendly
   const user = useState<User | null>('user', () => null)
 
+  // Estado de loading da autenticação
+  const isAuthLoading = useState<boolean>('auth-loading', () => true)
+
   // Computed para verificar se o usuário está autenticado
   const isAuthenticated = computed(() => !!user.value)
 
@@ -20,6 +23,11 @@ export const useUserSession = () => {
     user.value = userData
   }
 
+  // Função para definir o estado de loading
+  const setAuthLoading = (loading: boolean) => {
+    isAuthLoading.value = loading
+  }
+
   // Função para limpar a sessão
   const clear = () => {
     user.value = null
@@ -29,7 +37,9 @@ export const useUserSession = () => {
     user: readonly(user),
     isAuthenticated,
     isAdmin,
+    isAuthLoading: readonly(isAuthLoading),
     setUser,
+    setAuthLoading,
     clear
   }
 }

@@ -4,11 +4,13 @@
  * usando o cookie existente no navegador
  */
 export default defineNuxtPlugin(async () => {
-  const { isAuthenticated } = useUserSession()
+  const { isAuthenticated, setAuthLoading } = useUserSession()
   const { fetchUser } = useAuth()
 
+  // Define loading como true no início
+  setAuthLoading(true)
+
   // Apenas tenta restaurar a sessão se não estiver autenticado
-  // e se estiver no servidor (SSR) ou no cliente após hidratação
   if (!isAuthenticated.value) {
     try {
       // Tenta buscar o usuário usando o cookie existente
@@ -19,4 +21,7 @@ export default defineNuxtPlugin(async () => {
       console.debug('Nenhuma sessão ativa encontrada')
     }
   }
+
+  // Define loading como false após validação
+  setAuthLoading(false)
 })
