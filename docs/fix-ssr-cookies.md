@@ -5,6 +5,7 @@
 Durante o Server-Side Rendering (SSR), os cookies não estavam sendo encaminhados corretamente para o backend nas requisições de autenticação, especialmente no endpoint `/auth/refresh` e `/auth/me`.
 
 ### Erro Original
+
 ```
 ERROR  Erro ao renovar token: [POST] "http://localhost:8080/auth/refresh": 401 Unauthorized
 ```
@@ -37,7 +38,7 @@ const makeAuthRequest = async <T>(url: string, options: any = {}): Promise<T> =>
       return requestFetch(url, options)
     }
   }
-  
+
   // No cliente, usa $fetch normal com credentials: 'include'
   return $fetch(url, {
     ...options,

@@ -10,7 +10,7 @@ export const useAuth = () => {
   const { setUser, clear: clearSession } = useUserSession()
   const config = useRuntimeConfig()
   const apiBaseUrl = config.public.apiBaseUrl || 'http://localhost:8080'
-  
+
   /**
    * Função auxiliar para fazer requisições que automaticamente
    * encaminha cookies no servidor (SSR) e usa credentials no cliente
@@ -25,7 +25,7 @@ export const useAuth = () => {
         return requestFetch(url, options)
       }
     }
-    
+
     // No cliente, usa $fetch normal com credentials: 'include'
     return $fetch(url, {
       ...options,
