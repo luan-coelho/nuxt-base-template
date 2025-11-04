@@ -4,12 +4,15 @@ import { reactive, ref } from 'vue'
 import * as z from 'zod'
 
 const schema = z.object({
-  email: z.email('Informe um email válido'),
-  password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres'),
+  email: z.string().email('Informe um email válido'),
+  password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres'),
   remember: z.boolean().optional()
 })
 
 type SignInSchema = z.infer<typeof schema>
+
+const { login } = useAuth()
+const router = useRouter()
 
 const formError = ref<string | null>(null)
 const showPassword = ref(false)
@@ -30,6 +33,17 @@ async function onSubmit({ data }: FormSubmitEvent<SignInSchema>) {
   formError.value = null
 
   try {
+    const result = await login({
+      email: data.email,
+      password: data.password
+    })
+
+    if (result.success) {
+      // Redireciona para a home após login bem-sucedido
+      await router.push('/')
+    } else {
+      formError.value = result.error || 'Erro ao fazer login'
+    }
   } catch (error: any) {
     formError.value = error.message || 'Erro ao fazer login'
   } finally {

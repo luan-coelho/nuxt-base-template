@@ -1,64 +1,234 @@
-# Nuxt Dashboard Template
+# Nuxt Base Template com Autenticação
 
 [![Nuxt UI](https://img.shields.io/badge/Made%20with-Nuxt%20UI-00DC82?logo=nuxt&labelColor=020420)](https://ui.nuxt.com)
 
-Get started with the Nuxt dashboard template with multiple pages, collapsible sidebar, keyboard shortcuts, light & dark more, command palette and more, powered by [Nuxt UI](https://ui.nuxt.com).
+Template base Nuxt.js com sistema completo de autenticação integrado a backend Java, utilizando cookies HTTP-only para máxima segurança.
 
-- [Live demo](https://dashboard-template.nuxt.dev/)
-- [Documentation](https://ui.nuxt.com/docs/getting-started/installation/nuxt)
+## 🚀 Características
 
-<a href="https://dashboard-template.nuxt.dev/" target="_blank">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://ui.nuxt.com/assets/templates/nuxt/dashboard-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="https://ui.nuxt.com/assets/templates/nuxt/dashboard-light.png">
-    <img alt="Nuxt Dashboard Template" src="https://ui.nuxt.com/assets/templates/nuxt/dashboard-light.png">
-  </picture>
-</a>
+### Autenticação e Segurança
 
-> The dashboard template for Vue is on https://github.com/nuxt-ui-templates/dashboard-vue.
+- ✅ **Autenticação baseada em cookies HTTP-only** (tokens não acessíveis via JavaScript)
+- ✅ **Integração com backend Java** existente
+- ✅ **SSR e CSR compatível** (Server-Side e Client-Side Rendering)
+- ✅ **Middleware global** para proteção automática de rotas
+- ✅ **Renovação automática de tokens** (refresh token)
+- ✅ **Estado reativo** com `useState` do Nuxt
+- ✅ **Composables reutilizáveis** (`useAuth`, `useUserSession`)
 
-## Quick Start
+### Interface
 
-```bash [Terminal]
-npm create nuxt@latest -- -t github:nuxt-ui-templates/dashboard
+- 🎨 **Nuxt UI** - Componentes modernos e acessíveis
+- 🌗 **Dark Mode** - Suporte a tema escuro
+- 📱 **Responsivo** - Mobile-first design
+- ⚡ **Performance otimizada** - SSR e tree-shaking
+
+## 📋 Pré-requisitos
+
+- Node.js 18+
+- pnpm (recomendado) ou npm
+- Backend Java rodando em `http://localhost:8080`
+
+## 🛠️ Instalação
+
+### 1. Clone o repositório
+
+```bash
+git clone https://github.com/seu-usuario/nuxt-base-template.git
+cd nuxt-base-template
 ```
 
-## Deploy your own
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-name=dashboard&repository-url=https%3A%2F%2Fgithub.com%2Fnuxt-ui-templates%2Fdashboard&demo-image=https%3A%2F%2Fui.nuxt.com%2Fassets%2Ftemplates%2Fnuxt%2Fdashboard-dark.png&demo-url=https%3A%2F%2Fdashboard-template.nuxt.dev%2F&demo-title=Nuxt%20Dashboard%20Template&demo-description=A%20dashboard%20template%20with%20multi-column%20layout%20for%20building%20sophisticated%20admin%20interfaces.)
-
-## Setup
-
-Make sure to install the dependencies:
+### 2. Instale as dependências
 
 ```bash
 pnpm install
+# ou
+npm install
 ```
 
-## Development Server
+### 3. Configure as variáveis de ambiente
 
-Start the development server on `http://localhost:3000`:
+Crie um arquivo `.env` na raiz do projeto:
+
+```bash
+NUXT_PUBLIC_API_BASE_URL=http://localhost:8080
+```
+
+### 4. Inicie o servidor de desenvolvimento
 
 ```bash
 pnpm dev
+# ou
+npm run dev
 ```
 
-## Production
+Acesse `http://localhost:3000`
 
-Build the application for production:
+## 📚 Documentação Completa
+
+- **[Sistema de Autenticação](./docs/authentication.md)** - Documentação detalhada da implementação
+- **[Exemplos de Uso](./docs/authentication-examples.md)** - Exemplos práticos e casos de uso
+- **[Checklist de Verificação](./docs/authentication-checklist.md)** - Lista de verificação e testes
+- **[API Backend](./integracao-api.md)** - Documentação dos endpoints do backend
+
+## 🏗️ Estrutura do Projeto
+
+```
+app/
+├── composables/
+│   ├── useAuth.ts              # Operações de autenticação
+│   ├── useUserSession.ts       # Estado do usuário
+│   └── useApiExample.ts        # Exemplos de requisições
+├── middleware/
+│   └── auth.global.ts          # Proteção de rotas
+├── pages/
+│   ├── index.vue              # Página inicial
+│   ├── dashboard.vue          # Dashboard protegido
+│   └── auth/
+│       └── signin.vue         # Login
+├── plugins/
+│   └── auth.ts                # Inicialização da sessão
+└── types/
+    ├── auth.ts                # Tipos de autenticação
+    └── user.ts                # Tipo do usuário
+```
+
+## 🔐 Como Funciona
+
+### 1. Login
+
+```typescript
+const { login } = useAuth()
+
+const result = await login({
+  email: 'usuario@exemplo.com',
+  password: 'senha123'
+})
+
+if (result.success) {
+  // Usuário autenticado, cookies criados automaticamente
+  router.push('/dashboard')
+}
+```
+
+### 2. Acessar Dados do Usuário
+
+```vue
+<script setup lang="ts">
+const { user, isAuthenticated } = useUserSession()
+</script>
+
+<template>
+  <div v-if="isAuthenticated">
+    <p>Olá, {{ user?.name }}!</p>
+  </div>
+</template>
+```
+
+### 3. Fazer Requisições Autenticadas
+
+```typescript
+const data = await $fetch('/api/protected', {
+  credentials: 'include' // Envia cookies automaticamente
+})
+```
+
+### 4. Logout
+
+```typescript
+const { logout } = useAuth()
+await logout()
+```
+
+## 🛡️ Segurança
+
+- ✅ Tokens **nunca** expostos no cliente
+- ✅ Cookies com flags `HttpOnly`, `Secure`, e `SameSite`
+- ✅ Renovação automática de tokens expirados
+- ✅ Validação de sessão no SSR e CSR
+- ✅ Proteção automática de rotas privadas
+- ✅ Tratamento adequado de erros 401/403
+
+## 📖 Rotas Disponíveis
+
+- `/` - Página inicial (pública)
+- `/auth/signin` - Login (pública)
+- `/dashboard` - Dashboard (protegida)
+- Qualquer outra rota é **protegida** por padrão
+
+## 🧪 Testando
+
+### Teste Básico
+
+1. Inicie o backend Java em `http://localhost:8080`
+2. Inicie o frontend: `pnpm dev`
+3. Acesse `http://localhost:3000/dashboard` (deve redirecionar para login)
+4. Faça login com credenciais válidas
+5. Verifique que foi redirecionado e está autenticado
+6. No DevTools → Application → Cookies, veja os tokens HTTP-only
+
+### Verificação de Segurança
+
+```javascript
+// Tente acessar os cookies via JavaScript
+console.log(document.cookie)
+// Deve retornar vazio ou sem os tokens (HttpOnly protege)
+```
+
+## 🚀 Deploy
+
+### Build para Produção
 
 ```bash
 pnpm build
 ```
 
-Locally preview production build:
+### Preview Local
 
 ```bash
 pnpm preview
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+### Variáveis de Ambiente de Produção
 
-## Renovate integration
+Certifique-se de configurar:
 
-Install [Renovate GitHub app](https://github.com/apps/renovate/installations/select_target) on your repository and you are good to go.
+```bash
+NUXT_PUBLIC_API_BASE_URL=https://sua-api.com
+NODE_ENV=production
+```
+
+### Considerações de Produção
+
+- ✅ Use **HTTPS obrigatório**
+- ✅ Configure CORS no backend com origins específicas
+- ✅ Habilite flag `Secure` nos cookies
+- ✅ Configure `SameSite` adequadamente
+- ✅ Implemente rate limiting no backend
+- ✅ Configure logs de segurança
+
+Consulte a [documentação de deploy do Nuxt](https://nuxt.com/docs/getting-started/deployment) para mais informações.
+
+## 🤝 Contribuindo
+
+Contribuições são bem-vindas! Esta implementação segue as melhores práticas de:
+
+- Nuxt 3 e Composition API
+- TypeScript
+- Segurança Web (OWASP)
+- Clean Code
+
+## 📄 Licença
+
+MIT License
+
+## 🔗 Links Úteis
+
+- [Nuxt 3](https://nuxt.com)
+- [Nuxt UI](https://ui.nuxt.com)
+- [Vue 3](https://vuejs.org)
+- [TypeScript](https://www.typescriptlang.org)
+
+---
+
+Desenvolvido com ❤️ usando Nuxt 3 e Nuxt UI
