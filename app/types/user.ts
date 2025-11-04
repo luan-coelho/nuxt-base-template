@@ -43,7 +43,7 @@ const userListQuerySchema = z.object({
 type UserSchema = z.infer<typeof userSchema>
 type CreateUserSchema = z.infer<typeof createUserSchema>
 type UpdateUserSchema = z.infer<typeof updateUserSchema>
-type Role = (typeof userRoles)[number]
+type RoleSchema = (typeof userRoles)[number]
 
 export { createUserSchema, updateUserSchema, userListQuerySchema, userRoles, userSchema }
-export type { CreateUserSchema, Role, UpdateUserSchema, UserSchema }
+export type { CreateUserSchema, RoleSchema, UpdateUserSchema, UserSchema }

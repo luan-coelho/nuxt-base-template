@@ -4,14 +4,12 @@ import { reactive, ref } from 'vue'
 import * as z from 'zod'
 
 const schema = z.object({
-  email: z.string().email('Informe um email válido'),
+  email: z.email('Informe um email válido'),
   password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres'),
   remember: z.boolean().optional()
 })
 
 type SignInSchema = z.infer<typeof schema>
-
-const router = useRouter()
 
 const formError = ref<string | null>(null)
 const showPassword = ref(false)
